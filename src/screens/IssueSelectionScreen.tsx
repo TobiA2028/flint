@@ -5,6 +5,7 @@ import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { MascotGuide } from '@/components/MascotGuide';
 import { ISSUES } from '@/data/issues';
 import { ArrowRight } from 'lucide-react';
+import { SparkHeader } from '@/components/SparkHeader';
 
 interface IssueSelectionScreenProps {
   selectedIssues: string[];
@@ -41,7 +42,7 @@ export const IssueSelectionScreen = ({
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
-        <ProgressIndicator currentStep={2} totalSteps={7} />
+        <ProgressIndicator currentStep={2} totalSteps={10} />
         
         <div className="text-center mb-8">
           <MascotGuide 
@@ -49,9 +50,9 @@ export const IssueSelectionScreen = ({
             className="mb-6"
           />
           
-          <h1 className="text-3xl font-bold text-foreground mb-4">
-            What issues matter most to you?
-          </h1>
+          <SparkHeader
+            title="What issues matter most to you?"
+          />
           
           <p className="text-muted-foreground mb-2">
             Choose exactly <span className="font-semibold text-accent">{maxSelections} issues</span> that you care about
