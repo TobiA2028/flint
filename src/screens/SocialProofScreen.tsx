@@ -44,19 +44,6 @@ export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue }: Socia
             subtitle="People in your community care about solving these issues."
                   />
           
-          {/* <div className="bg-card rounded-xl p-6 shadow-card mb-6">
-            <div className="flex items-center justify-center mb-4">
-              <Users className="w-8 h-8 text-civic mr-3" />
-              <div className="text-left">
-                <div className="text-3xl font-bold text-civic">
-                  {mockStats.totalPeople.toLocaleString()}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  people in your area care about these same issues
-                </div>
-              </div>
-            </div>
-          </div> */}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -81,7 +68,7 @@ export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue }: Socia
                 </h3>
                 
                 <div className="flex items-center justify-center mb-2">
-                  <span className="text-3xl font-bold text-civic">
+                  <span className="text-3xl font-bold text-accent">
                     {issue.count.toLocaleString()}
                   </span>
                 </div>
