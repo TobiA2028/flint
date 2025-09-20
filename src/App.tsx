@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,7 +33,9 @@ const App = () => {
   } = useAppState();
 
   const handleNextStep = () => {
-    setCurrentStep(state.currentStep + 1);
+    const nextStep = state.currentStep + 1;
+    window.history.pushState({ step: nextStep }, '', '');
+    setCurrentStep(nextStep);
   };
 
   const handleSelectIssues = (issues: string[]) => {
@@ -45,18 +48,41 @@ const App = () => {
 
   const handleReadyYes = () => {
     setFinalScreenType('cast');
+    window.history.pushState({ step: 10 }, '', '');
     setCurrentStep(10); // Go to CastItScreen
   };
 
   const handleNotReady = () => {
+    window.history.pushState({ step: 9 }, '', '');
     setCurrentStep(9); // Go to FeedbackScreen
   };
 
   const handleFeedbackDone = (feedback: string) => {
     setFeedback(feedback);
     setFinalScreenType('thankyou');
+    window.history.pushState({ step: 10 }, '', '');
     setCurrentStep(10); // Go to ThankYouScreen
   };
+
+  // Scroll to top whenever the current step changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [state.currentStep]);
+
+  // Handle browser back button
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.step) {
+        setCurrentStep(event.state.step);
+      } else if (state.currentStep > 1) {
+        // Fallback: go back one step if no state
+        setCurrentStep(state.currentStep - 1);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [state.currentStep]);
 
   const renderCurrentScreen = () => {
     switch (state.currentStep) {
