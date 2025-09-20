@@ -1,13 +1,9 @@
-import { useState } from 'react';
 import { CTAButton } from '@/components/CTAButton';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { MascotGuide } from '@/components/MascotGuide';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Download, Mail, MapPin, Calendar, Share, RefreshCw } from 'lucide-react';
-import { toast } from 'sonner';
+import { MapPin } from 'lucide-react';
 import { ArrowRight } from 'lucide-react';
 
 interface BallotPreviewScreenProps {
@@ -34,42 +30,7 @@ export const BallotPreviewScreen = ({
   onContinue,
   onRestart 
 }: BallotPreviewScreenProps) => {
-  const [email, setEmail] = useState('');
-  const [wantsUpdates, setWantsUpdates] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const hasStarredItems = starredCandidates.length > 0 || starredMeasures.length > 0;
-  const canSubmitEmail = email.includes('@') && email.length > 5;
-
-  const handleEmailSubmit = async () => {
-    if (!canSubmitEmail) return;
-    
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success('Ballot preview sent to your email!');
-    setIsSubmitting(false);
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'My Flint Ballot Preview',
-        text: 'Check out my personalized ballot preview from Flint!',
-        url: window.location.href
-      });
-    } else {
-      // Fallback - copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      toast.success('Link copied to clipboard!');
-    }
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   return (
     <div className="min-h-screen bg-background p-6">

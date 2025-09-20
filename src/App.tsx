@@ -12,6 +12,9 @@ import { SocialProofScreen } from "@/screens/SocialProofScreen";
 import { OfficeMappingScreen } from "@/screens/OfficeMappingScreen";
 import { CandidatesScreen } from "@/screens/CandidatesScreen";
 import { BallotPreviewScreen } from "@/screens/BallotPreviewScreen";
+import { ReadyToCastScreen } from "@/screens/ReadyToCastScreen";
+import { FeedbackScreen } from "@/screens/FeedbackScreen";
+import { ThankYouScreen } from "@/screens/ThankYouScreen";
 import { CastItScreen } from "@/screens/CastItScreen";
 
 const queryClient = new QueryClient();
@@ -23,6 +26,8 @@ const App = () => {
     setCurrentStep,
     toggleStarredCandidate,
     toggleStarredMeasure,
+    setFeedback,
+    setFinalScreenType,
     resetState
   } = useAppState();
 
@@ -36,6 +41,21 @@ const App = () => {
 
   const handleRestartApp = () => {
     resetState();
+  };
+
+  const handleReadyYes = () => {
+    setFinalScreenType('cast');
+    setCurrentStep(10); // Go to CastItScreen
+  };
+
+  const handleNotReady = () => {
+    setCurrentStep(9); // Go to FeedbackScreen
+  };
+
+  const handleFeedbackDone = (feedback: string) => {
+    setFeedback(feedback);
+    setFinalScreenType('thankyou');
+    setCurrentStep(10); // Go to ThankYouScreen
   };
 
   const renderCurrentScreen = () => {
@@ -103,11 +123,34 @@ const App = () => {
       
       case 8:
         return (
-          <CastItScreen
-            zipCode={state.userProfile.zipCode}
-            onRestart={handleRestartApp}
+          <ReadyToCastScreen
+            onYes={handleReadyYes}
+            onNotReady={handleNotReady}
           />
         );
+      
+      case 9:
+        return (
+          <FeedbackScreen
+            onDone={handleFeedbackDone}
+          />
+        );
+      
+      case 10:
+        if (state.finalScreenType === 'thankyou') {
+          return (
+            <ThankYouScreen
+              onRestart={handleRestartApp}
+            />
+          );
+        } else {
+          return (
+            <CastItScreen
+              zipCode={state.userProfile.zipCode}
+              onRestart={handleRestartApp}
+            />
+          );
+        }
       
       default:
         return <WelcomeScreen onContinue={handleNextStep} />;

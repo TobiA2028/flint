@@ -44,4 +44,6 @@ export interface AppState {
   userProfile: UserProfile;
   starredCandidates: string[];
   starredMeasures: string[];
+  feedback: string;
+  finalScreenType: 'cast' | 'thankyou' | null;
 }

@@ -12,7 +12,9 @@ const initialState: AppState = {
     zipCode: ''
   },
   starredCandidates: [],
-  starredMeasures: []
+  starredMeasures: [],
+  feedback: '',
+  finalScreenType: null
 };
 
 export const useAppState = () => {
@@ -65,6 +67,14 @@ export const useAppState = () => {
     }));
   };
 
+  const setFeedback = (feedback: string) => {
+    setState(prev => ({ ...prev, feedback }));
+  };
+
+  const setFinalScreenType = (type: 'cast' | 'thankyou' | null) => {
+    setState(prev => ({ ...prev, finalScreenType: type }));
+  };
+
   const resetState = () => {
     setState(initialState);
     localStorage.removeItem(STORAGE_KEY);
@@ -76,6 +86,8 @@ export const useAppState = () => {
     setCurrentStep,
     toggleStarredCandidate,
     toggleStarredMeasure,
+    setFeedback,
+    setFinalScreenType,
     resetState
   };
 };
