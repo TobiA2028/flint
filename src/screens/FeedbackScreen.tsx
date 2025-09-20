@@ -45,7 +45,7 @@ export const FeedbackScreen = ({ onDone }: FeedbackScreenProps) => {
           
           <CTAButton
             onClick={handleDone}
-            variant="civic"
+            variant="spark"
             className="w-full"
           >
             Done

@@ -73,7 +73,7 @@ export const ThankYouScreen = ({ onRestart }: ThankYouScreenProps) => {
             </h3>
             <CTAButton
               onClick={handleShare}
-              variant="outline"
+              variant="secondary"
               className="w-full"
             >
               <Share className="w-4 h-4 mr-2" />
@@ -95,7 +95,7 @@ export const ThankYouScreen = ({ onRestart }: ThankYouScreenProps) => {
               />
               <CTAButton
                 onClick={handleEmailSubmit}
-                variant="civic"
+                variant="spark"
                 className="w-full"
                 disabled={isSubmitting}
               >
@@ -108,7 +108,7 @@ export const ThankYouScreen = ({ onRestart }: ThankYouScreenProps) => {
           {/* Restart Option */}
           <CTAButton
             onClick={onRestart}
-            variant="outline"
+            variant="secondary"
             className="w-full"
           >
             Start Over

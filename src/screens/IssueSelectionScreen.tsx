@@ -81,7 +81,7 @@ export const IssueSelectionScreen = ({
           <CTAButton
             onClick={onContinue}
             disabled={!canContinue}
-            variant={canContinue ? 'civic' : 'outline'}
+            variant={'spark'}
             className="min-w-[200px]"
           >
             Continue

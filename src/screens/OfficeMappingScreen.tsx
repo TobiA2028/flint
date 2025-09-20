@@ -228,7 +228,7 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue }: OfficeMappin
         <div className="flex justify-center">
           <CTAButton
             onClick={onContinue}
-            variant="civic"
+            variant="spark"
             className="min-w-[200px]"
           >
             See Your Choices

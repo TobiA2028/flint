@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 interface CTAButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
-  variant?: 'spark' | 'civic' | 'outline';
+  variant?: 'spark' | 'secondary';
   disabled?: boolean;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -20,8 +20,7 @@ export const CTAButton = ({
 }: CTAButtonProps) => {
   const variants = {
     spark: 'bg-spark-gradient hover:shadow-spark text-accent-foreground font-semibold',
-    civic: 'bg-civic-gradient hover:shadow-civic text-civic-foreground font-semibold',
-    outline: 'border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground'
+    secondary: 'border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground bg-transparent'
   };
 
   const sizes = {
@@ -38,6 +37,7 @@ export const CTAButton = ({
         'rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95',
         variants[variant],
         sizes[size],
+        disabled && 'opacity-50 cursor-not-allowed hover:scale-100',
         className
       )}
     >

@@ -123,7 +123,7 @@ export const BallotPreviewScreen = ({
             <div className="flex justify-center">
           <CTAButton
             onClick={onContinue}
-            variant="civic"
+            variant="spark"
             className="min-w-[200px]"
           >
             Continue
@@ -138,7 +138,7 @@ export const BallotPreviewScreen = ({
             </p>
             <CTAButton
               onClick={() => window.history.back()}
-              variant="civic"
+              variant="spark"
             >
               Go Back to Make Selections
             </CTAButton>

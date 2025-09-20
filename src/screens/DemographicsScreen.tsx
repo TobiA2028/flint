@@ -147,7 +147,7 @@ export const DemographicsScreen = ({
           <CTAButton
             onClick={onContinue}
             disabled={!canContinue}
-            variant={'civic'}
+            variant={'spark'}
             className="min-w-[250px]"
           >
             Connect me to my Community

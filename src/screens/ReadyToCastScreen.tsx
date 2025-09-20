@@ -27,7 +27,7 @@ export const ReadyToCastScreen = ({ onYes, onNotReady }: ReadyToCastScreenProps)
         <div className="space-y-4 max-w-md mx-auto">
           <CTAButton
             onClick={onYes}
-            variant="civic"
+            variant="spark"
             className="w-full"
           >
             Yes
@@ -35,7 +35,7 @@ export const ReadyToCastScreen = ({ onYes, onNotReady }: ReadyToCastScreenProps)
           
           <CTAButton
             onClick={onNotReady}
-            variant="outline"
+            variant="secondary"
             className="w-full"
           >
             No
@@ -43,7 +43,7 @@ export const ReadyToCastScreen = ({ onYes, onNotReady }: ReadyToCastScreenProps)
           
           <CTAButton
             onClick={onNotReady}
-            variant="outline"
+            variant="secondary"
             className="w-full"
           >
             Still Thinking

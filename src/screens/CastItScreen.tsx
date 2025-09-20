@@ -156,7 +156,7 @@ export const CastItScreen = ({ zipCode, onRestart }: CastItScreenProps) => {
               <CTAButton
                 onClick={handleEmailSubmit}
                 disabled={!canSubmitEmail || isSubmitting}
-                variant="civic"
+                variant="spark"
                 className="w-full"
               >
                 {isSubmitting ? (
@@ -178,7 +178,7 @@ export const CastItScreen = ({ zipCode, onRestart }: CastItScreenProps) => {
           <div className="flex flex-col sm:flex-row gap-4 print:hidden">
             <CTAButton
               onClick={handlePrint}
-              variant="outline"
+              variant="secondary"
               className="flex-1"
             >
               <Download className="w-4 h-4 mr-2" />
@@ -187,7 +187,7 @@ export const CastItScreen = ({ zipCode, onRestart }: CastItScreenProps) => {
             
             <CTAButton
               onClick={handleShare}
-              variant="outline"
+              variant="secondary"
               className="flex-1"
             >
               <Share className="w-4 h-4 mr-2" />

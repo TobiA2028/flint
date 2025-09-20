@@ -170,7 +170,7 @@ export const CandidatesScreen = ({
           <CTAButton
             onClick={onContinue}
             disabled={!canContinue}
-            variant={canContinue ? 'civic' : 'outline'}
+            variant={'spark'}
             className="min-w-[200px]"
           >
             Create My Ballot Preview
