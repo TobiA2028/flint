@@ -3,6 +3,7 @@ import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { MascotGuide } from '@/components/MascotGuide';
 import { ISSUES } from '@/data/issues';
 import { Users, TrendingUp, ArrowRight } from 'lucide-react';
+import { SparkHeader } from '@/components/SparkHeader';
 
 interface SocialProofScreenProps {
   selectedIssues: string[];
@@ -38,11 +39,12 @@ export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue }: Socia
             className="mb-6"
           />
           
-          <h1 className="text-3xl font-bold text-foreground mb-4">
-            You're not alone!
-          </h1>
+          <SparkHeader
+            title="You are not alone!"
+            subtitle="People in your community care about solving these issues."
+                  />
           
-          <div className="bg-card rounded-xl p-6 shadow-card mb-6">
+          {/* <div className="bg-card rounded-xl p-6 shadow-card mb-6">
             <div className="flex items-center justify-center mb-4">
               <Users className="w-8 h-8 text-civic mr-3" />
               <div className="text-left">
@@ -54,46 +56,53 @@ export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue }: Socia
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
         
-        <div className="space-y-4 mb-8">
-          <h2 className="text-xl font-semibold text-foreground text-center mb-6">
-            Your issues, by the numbers:
-          </h2>
-          
-          {mockStats.issueEngagement.map((issue, index) => (
-            <div key={issue.id} className="bg-card rounded-lg p-4 shadow-card">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium text-card-foreground">{issue.name}</span>
-                <div className="flex items-center text-civic">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  <span className="font-semibold">{issue.count}</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {mockStats.issueEngagement.slice(0, 3).map((issue, index) => {
+            return (
+              <div key={issue.id} className="bg-card rounded-xl p-6 shadow-card text-center">
+                <div className="mb-6">
+                  <div className="w-full h-32 bg-civic/10 rounded-lg mb-3 flex items-center justify-center">
+                    <div className="flex space-x-1">
+                      {[...Array(8)].map((_, i) => (
+                        <Users 
+                          key={i} 
+                          className={`w-4 h-4 ${i < 5 ? 'text-civic' : 'text-civic/40'}`} 
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
+                
+                <h3 className="text-lg font-semibold text-card-foreground mb-3">
+                  {issue.name}
+                </h3>
+                
+                <div className="flex items-center justify-center mb-2">
+                  <span className="text-3xl font-bold text-civic">
+                    {issue.count.toLocaleString()}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-muted-foreground">
+                  people in your community
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  care about this issue
+                </p>
               </div>
-              <div className="w-full bg-secondary rounded-full h-2">
-                <div 
-                  className="bg-civic-gradient h-2 rounded-full transition-all duration-1000 ease-out"
-                  style={{ 
-                    width: `${Math.min((issue.count / 1000) * 100, 100)}%`,
-                    animationDelay: `${index * 200}ms`
-                  }}
-                />
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                community members engaged
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
         
         <div className="bg-accent/10 rounded-xl p-6 text-center mb-8">
           <h3 className="text-lg font-semibold text-foreground mb-2">
-            Together, these issues add up to real change
+            Ready to make an impact?
           </h3>
           <p className="text-muted-foreground">
-            When people like you engage with local government, communities thrive. 
-            Your voice matters, and you're not the only one who cares.
+            Now let's connect your issues to the specific local offices that shape policy in these areas.
           </p>
         </div>
         
