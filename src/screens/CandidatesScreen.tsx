@@ -100,16 +100,6 @@ export const CandidatesScreen = ({
     ).filter(Boolean) as string[];
   };
 
-  const getMascotMessage = () => {
-    if (totalStarred === 0) {
-      return "Star the candidates and measures you want to remember!";
-    } else if (totalStarred < 3) {
-      return "Great start! You can star more choices if you'd like.";
-    } else {
-      return "Excellent! You're building a personalized ballot guide.";
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
@@ -122,11 +112,11 @@ export const CandidatesScreen = ({
           />
           
           <h1 className="text-3xl font-bold text-foreground mb-4">
-            Your candidates & ballot measures
+            Your ballot, made simple!
           </h1>
           
           <p className="text-muted-foreground mb-4">
-            Based on your selected issues. Star the ones you want to remember!
+            Based on your selected issues. Star the ones you want to remember and follow-up on!
           </p>
           
           <div className="flex justify-center items-center space-x-2 text-sm">

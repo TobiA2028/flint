@@ -1,9 +1,11 @@
 import { CTAButton } from '@/components/CTAButton';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { MascotGuide } from '@/components/MascotGuide';
-import { Card } from '@/components/ui/card';
+import { OfficeCard } from '@/components/OfficeCard';
+import { BallotMeasureCard } from '@/components/BallotMeasureCard';
 import { ISSUES } from '@/data/issues';
-import { Building, ArrowRight, ExternalLink } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { SparkHeader } from '@/components/SparkHeader';
 
 interface OfficeMappingScreenProps {
   selectedIssues: string[];
@@ -94,8 +96,62 @@ const getOfficesForIssues = (issueIds: string[]) => {
   });
 };
 
+// Mock ballot measures data - only for selected issues
+const getBallotMeasuresForIssues = (issueIds: string[]) => {
+  const ballotMeasureMapping: Record<string, Array<{
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    impact: string;
+    isStarred: boolean;
+  }>> = {
+    education: [
+      {
+        id: 'measure-edu-1',
+        title: 'School Bond Initiative - Measure A',
+        description: 'Authorizes $500 million in bonds to modernize school facilities, upgrade technology infrastructure, and improve safety systems across all district schools.',
+        category: 'Education',
+        impact: 'Would increase property taxes by approximately $45 per year for the average homeowner',
+        isStarred: false
+      }
+    ],
+    transportation: [
+      {
+        id: 'measure-trans-1', 
+        title: 'Public Transit Expansion - Measure B',
+        description: 'Funds the extension of light rail service to underserved communities and increases bus frequency during peak hours.',
+        category: 'Transportation',
+        impact: 'Would provide improved transit access to 25,000 additional residents',
+        isStarred: false
+      }
+    ],
+    environment: [
+      {
+        id: 'measure-env-1',
+        title: 'Clean Energy Initiative - Measure C', 
+        description: 'Requires the city to transition to 100% renewable energy by 2030 and establishes a green jobs training program.',
+        category: 'Environment',
+        impact: 'Would create an estimated 500 new green jobs over the next 5 years',
+        isStarred: false
+      }
+    ]
+  };
+
+  return issueIds.map(issueId => {
+    const issue = ISSUES.find(i => i.id === issueId);
+    const measures = ballotMeasureMapping[issueId] || [];
+    
+    return {
+      issue,
+      measures
+    };
+  }).filter(item => item.measures.length > 0); // Only return issues that have ballot measures
+};
+
 export const OfficeMappingScreen = ({ selectedIssues, onContinue }: OfficeMappingScreenProps) => {
   const mappedOffices = getOfficesForIssues(selectedIssues);
+  const mappedBallotMeasures = getBallotMeasuresForIssues(selectedIssues);
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -108,13 +164,11 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue }: OfficeMappin
             className="mb-6"
           />
           
-          <h1 className="text-3xl font-bold text-foreground mb-4">
-            Your issues connect to these offices
-          </h1>
-          
-          <p className="text-muted-foreground">
-            Each office has real power to address the issues you care about
-          </p>
+          <SparkHeader
+            title="Your vote is your spark!"
+            subtitle="These local offices and ballot items directly impact what you care about."
+          />
+
         </div>
         
         <div className="space-y-6 mb-8">
@@ -129,41 +183,44 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue }: OfficeMappin
                 <h2 className="text-xl font-semibold text-foreground">{issue?.name}</h2>
               </div>
               
-              {offices.map(office => (
-                <Card key={office.id} className="p-6 shadow-card hover:shadow-civic transition-shadow duration-300">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-civic/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Building className="w-6 h-6 text-civic" />
-                    </div>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-card-foreground">
-                          {office.name}
-                        </h3>
-                        <span className="text-xs font-medium px-2 py-1 bg-civic/10 text-civic rounded-full">
-                          {office.level.toUpperCase()}
-                        </span>
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-muted-foreground uppercase text-sm tracking-wider">
+                  Positions
+                </h3>
+                {offices.map(office => (
+                  <OfficeCard key={office.id} office={office} />
+                ))}
+              </div>
+
+              {/* Ballot Measures for this issue */}
+              {(() => {
+                const ballotMeasuresForIssue = mappedBallotMeasures.find(item => item.issue?.id === issue?.id);
+                if (!ballotMeasuresForIssue || ballotMeasuresForIssue.measures.length === 0) return null;
+                
+                return (
+                  <div className="space-y-3 mt-6">
+                    <h3 className="text-lg font-semibold text-muted-foreground uppercase text-sm tracking-wider">
+                      Ballot Measures
+                    </h3>
+                    {ballotMeasuresForIssue.measures.map(measure => (
+                      <div key={measure.id} className="relative">
+                        <BallotMeasureCard 
+                          measure={measure}
+                          isStarred={false}
+                          onToggleStar={() => {}} // Display only, no starring on this screen
+                          showStar={false}
+                        />
+                        {/* STATE tag overlay - positioned to match OfficeCard level tags */}
+                        <div className="absolute top-4 right-4">
+                          <span className="text-xs font-medium px-2 py-1 bg-civic/10 text-civic rounded-full">
+                            STATE
+                          </span>
+                        </div>
                       </div>
-                      
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {office.description}
-                      </p>
-                      
-                      <p className="text-sm text-card-foreground leading-relaxed mb-4">
-                        {office.explanation}
-                      </p>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-civic">
-                          View candidates & positions
-                        </span>
-                        <ExternalLink className="w-4 h-4 text-civic" />
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                </Card>
-              ))}
+                );
+              })()}
             </div>
           ))}
         </div>

@@ -8,28 +8,31 @@ interface BallotMeasureCardProps {
   measure: BallotMeasure;
   isStarred: boolean;
   onToggleStar: (measureId: string) => void;
+  showStar?: boolean;
 }
 
-export const BallotMeasureCard = ({ measure, isStarred, onToggleStar }: BallotMeasureCardProps) => {
+export const BallotMeasureCard = ({ measure, isStarred, onToggleStar, showStar = true }: BallotMeasureCardProps) => {
   return (
     <Card className="p-6 shadow-card hover:shadow-civic transition-all duration-300 relative">
-      <button
-        onClick={() => onToggleStar(measure.id)}
-        className={cn(
-          'absolute top-4 right-4 p-2 rounded-full transition-all duration-300',
-          isStarred 
-            ? 'bg-accent text-accent-foreground hover:bg-accent/90' 
-            : 'bg-secondary text-muted-foreground hover:bg-accent/20 hover:text-accent'
-        )}
-        aria-label={isStarred ? 'Remove from ballot' : 'Add to ballot'}
-      >
-        <Star 
+      {showStar && (
+        <button
+          onClick={() => onToggleStar(measure.id)}
           className={cn(
-            'w-5 h-5 transition-transform duration-200',
-            isStarred ? 'fill-current scale-110' : 'hover:scale-110'
-          )} 
-        />
-      </button>
+            'absolute top-4 right-4 p-2 rounded-full transition-all duration-300',
+            isStarred 
+              ? 'bg-accent text-accent-foreground hover:bg-accent/90' 
+              : 'bg-secondary text-muted-foreground hover:bg-accent/20 hover:text-accent'
+          )}
+          aria-label={isStarred ? 'Remove from ballot' : 'Add to ballot'}
+        >
+          <Star 
+            className={cn(
+              'w-5 h-5 transition-transform duration-200',
+              isStarred ? 'fill-current scale-110' : 'hover:scale-110'
+            )} 
+          />
+        </button>
+      )}
       
       <div className="mb-4">
         <div className="flex items-center space-x-2 mb-3">
@@ -41,7 +44,10 @@ export const BallotMeasureCard = ({ measure, isStarred, onToggleStar }: BallotMe
           </span>
         </div>
         
-        <h3 className="text-lg font-semibold text-card-foreground mb-3 pr-12">
+        <h3 className={cn(
+          "text-lg font-semibold text-card-foreground mb-3",
+          showStar ? "pr-12" : "pr-0"
+        )}>
           {measure.title}
         </h3>
       </div>
