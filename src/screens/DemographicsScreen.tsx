@@ -1,12 +1,11 @@
-import { useState } from 'react';
 import { CTAButton } from '@/components/CTAButton';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { MascotGuide } from '@/components/MascotGuide';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { UserProfile } from '@/types';
 import { MapPin, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SparkHeader } from '@/components/SparkHeader';
 
 interface DemographicsScreenProps {
   userProfile: UserProfile;
@@ -15,23 +14,24 @@ interface DemographicsScreenProps {
 }
 
 const AGE_GROUPS = [
-  { id: '18-25', label: '18-25' },
-  { id: '26-35', label: '26-35' },
-  { id: '36-50', label: '36-50' },
-  { id: '51-65', label: '51-65' },
+  { id: '18-24', label: '18-24' },
+  { id: '25-34', label: '25-34' },
+  { id: '35-44', label: '35-44' },
+  { id: '45-54', label: '45-54' },
+  { id: '55-64', label: '55-64' },
   { id: '65+', label: '65+' }
 ];
 
 const COMMUNITY_ROLES = [
-  { id: 'student', label: 'Student' },
   { id: 'parent', label: 'Parent' },
-  { id: 'business_owner', label: 'Small Business Owner' },
-  { id: 'educator', label: 'Educator' },
-  { id: 'healthcare', label: 'Healthcare Worker' },
+  { id: 'student', label: 'Student' },
+  { id: 'business_owner', label: 'Business Owner' },
+  { id: 'renter', label: 'Renter' },
+  { id: 'homeowner', label: 'Homeowner' },
+  { id: 'commuter', label: 'Commuter' },
   { id: 'retiree', label: 'Retiree' },
-  { id: 'volunteer', label: 'Community Volunteer' },
-  { id: 'artist', label: 'Artist/Creative' },
-  { id: 'other', label: 'Other' }
+  { id: 'first_time_voter', label: 'First-time Voter' },
+  { id: 'volunteer', label: 'Community Volunteer' }
 ];
 
 export const DemographicsScreen = ({ 
@@ -70,30 +70,28 @@ export const DemographicsScreen = ({
             className="mb-6"
           />
           
-          <h1 className="text-3xl font-bold text-foreground mb-4">
-            Who are you?
-          </h1>
-          
-          <p className="text-muted-foreground">
-            Help us connect you to your local community and relevant issues
-          </p>
+          <SparkHeader
+            title="Who are you?"
+            subtitle="Help us connect you to your local community and relevant issues."
+          />
         </div>
         
         <div className="space-y-8">
           {/* Age Group */}
           <div>
             <h3 className="text-lg font-semibold text-foreground mb-4">Age Group</h3>
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {AGE_GROUPS.map(group => (
                 <button
                   key={group.id}
                   onClick={() => handleAgeGroupSelect(group.id)}
                   className={cn(
-                    'px-4 py-2 rounded-full border-2 transition-all duration-200',
-                    userProfile.ageGroup === group.id
-                      ? 'border-accent bg-accent text-accent-foreground'
-                      : 'border-border text-muted-foreground hover:border-accent/50'
-                  )}
+                  "p-3 rounded-xl border-2 text-sm font-medium transition-all",
+                  "focus:outline-none focus:ring-2 focus:ring-civic focus:ring-offset-2",
+                  userProfile.ageGroup === group.id
+                    ? "border-civic bg-civic/5 text-civic"
+                    : "border-border bg-card hover:border-civic/50"
+                )}
                 >
                   {group.label}
                 </button>
@@ -104,23 +102,23 @@ export const DemographicsScreen = ({
           {/* Community Roles */}
           <div>
             <h3 className="text-lg font-semibold text-foreground mb-4">
-              Community Role (select all that apply)
+              Which describes you? (Select all that apply)
             </h3>
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {COMMUNITY_ROLES.map(role => (
-                <Badge
+                <button
                   key={role.id}
-                  variant={userProfile.communityRole.includes(role.id) ? 'default' : 'outline'}
-                  className={cn(
-                    'cursor-pointer transition-all duration-200 px-4 py-2',
-                    userProfile.communityRole.includes(role.id)
-                      ? 'bg-civic text-civic-foreground hover:bg-civic/90'
-                      : 'hover:border-civic/50'
-                  )}
                   onClick={() => handleRoleToggle(role.id)}
+                  className={cn(
+                    "p-3 rounded-xl border-2 text-sm font-medium transition-all",
+                    "focus:outline-none focus:ring-2 focus:ring-civic focus:ring-offset-2",
+                    userProfile.communityRole.includes(role.id)
+                      ? "border-civic bg-civic/5 text-civic"
+                      : "border-border bg-card hover:border-civic/50"
+                  )}
                 >
                   {role.label}
-                </Badge>
+                </button>
               ))}
             </div>
           </div>
@@ -135,7 +133,7 @@ export const DemographicsScreen = ({
                 placeholder="12345"
                 value={userProfile.zipCode}
                 onChange={handleZipCodeChange}
-                className="pl-12 text-lg"
+                className="pl-12 text-lg rounded-xl"
                 maxLength={5}
               />
             </div>
@@ -149,10 +147,10 @@ export const DemographicsScreen = ({
           <CTAButton
             onClick={onContinue}
             disabled={!canContinue}
-            variant={canContinue ? 'civic' : 'outline'}
+            variant={'civic'}
             className="min-w-[250px]"
           >
-            Connect Me to My Community
+            Connect me to my Community
             <ArrowRight className="w-5 h-5 ml-2" />
           </CTAButton>
         </div>

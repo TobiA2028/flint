@@ -1,48 +1,48 @@
-# MascotGuide Simplification - Todo List
+# Demographics Screen Button Refactor - Todo List
 
 ## Tasks
 
-- [x] 1. Simplify MascotGuide component (remove animations and message card)
-- [x] 2. Update WelcomeScreen.tsx (remove message prop)
-- [x] 3. Update IssueSelectionScreen.tsx (remove message prop)
-- [x] 4. Update DemographicsScreen.tsx (remove message prop)
-- [x] 5. Update SocialProofScreen.tsx (remove message prop)
-- [x] 6. Update OfficeMappingScreen.tsx (remove message prop)
-- [x] 7. Update CandidatesScreen.tsx (remove message prop)
-- [x] 8. Update BallotPreviewScreen.tsx (remove message prop)
+- [x] 1. Update age groups data (expand to 6 ranges: 18-24, 25-34, 35-44, 45-54, 55-64, 65+)
+- [x] 2. Update community roles data (match design: Parent, Student, Business Owner, etc.)
+- [x] 3. Convert community roles from Badge to button components
+- [x] 4. Change community roles layout to 2-column grid
+- [x] 5. Update ZIP code input styling to match button border radius
+- [x] 6. Remove unused useState import to fix TypeScript warning
 
 ## Review Section
 
 ### Summary of Changes Made
-Successfully simplified the MascotGuide component by:
+Successfully refactored the Demographics Screen to match the provided design:
 
-1. **Component Simplification** (`MascotGuide.tsx`):
-   - Removed `message` prop from interface
-   - Removed `animate-glow` and `animate-spark` animation classes 
-   - Removed message card JSX with speech bubble styling
-   - Kept responsive sizing (sm/md/lg) and className props
-   - Component now displays only a centered, static mascot logo
+1. **Age Groups Updated** (`DemographicsScreen.tsx`):
+   - Expanded from 5 to 6 age ranges: `18-24, 25-34, 35-44, 45-54, 55-64, 65+`
+   - Maintains existing 3-column grid layout for clean 3x2 display
+   - Keeps current button styling with rounded-xl borders
 
-2. **Screen Updates** (7 files):
-   - Removed `message` prop from all MascotGuide usages across:
-     - WelcomeScreen.tsx
-     - IssueSelectionScreen.tsx
-     - DemographicsScreen.tsx
-     - SocialProofScreen.tsx
-     - OfficeMappingScreen.tsx
-     - CandidatesScreen.tsx
-     - BallotPreviewScreen.tsx
+2. **Community Roles Refactored**:
+   - Updated data to match design: `Parent, Student, Business Owner, Renter, Homeowner, Commuter, Retiree, First-time Voter, Community Volunteer`
+   - Converted from Badge components to button components for consistency
+   - Changed layout from flex-wrap to 2-column grid (`grid-cols-2`)
+   - Applied same styling as age group buttons with multi-select functionality
+   - Updated section title to "Which describes you? (Select all that apply)"
+
+3. **ZIP Code Input Styling**:
+   - Added `rounded-xl` class to match button border radius
+   - Maintained all existing functionality and layout
+
+4. **Code Cleanup**:
+   - Removed unused `useState` import
+   - Removed unused `Badge` import
+   - Fixed TypeScript warnings
 
 ### Impact
-- All animations removed from mascot display
-- No more speech bubbles or message cards
-- Clean, minimal mascot presentation
-- Maintains responsive sizing functionality
-- All screens updated to work with simplified component
+- Consistent visual design language across all form sections
+- Clean grid layouts matching the provided design
+- Improved user experience with consistent button styling
+- Better responsive layout for community roles
 
 ### Files Modified
-- `src/components/MascotGuide.tsx` (main component)
-- 7 screen components (removed message props)
+- `src/screens/DemographicsScreen.tsx` (main component updates)
 - `tasks/todo.md` (this planning document)
 
 **Status**: ✅ All tasks completed successfully
