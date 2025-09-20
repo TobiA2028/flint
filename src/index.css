@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system - Flint Civic Engagement App
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 220 14% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 14% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 14% 15%;
+
+    /* Flint Brand Colors */
+    --primary: 220 14% 42%; /* Gray - representing flint/stone */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 211 40% 96%;
+    --secondary-foreground: 220 14% 42%;
+
+    --muted: 211 40% 96%;
+    --muted-foreground: 220 8% 50%;
+
+    --accent: 24 95% 53%; /* Orange - representing spark/fire */
+    --accent-foreground: 0 0% 100%;
+
+    --civic: 217 91% 60%; /* Blue - civic engagement */
+    --civic-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%; /* Green - completed actions */
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 31% 91%;
+    --input: 214 31% 91%;
+    --ring: 24 95% 53%;
+
+    --radius: 0.75rem;
+
+    /* Flint-specific design tokens */
+    --spark-gradient: linear-gradient(135deg, hsl(var(--accent)), hsl(24 100% 65%));
+    --stone-gradient: linear-gradient(135deg, hsl(var(--primary)), hsl(220 14% 35%));
+    --civic-gradient: linear-gradient(135deg, hsl(var(--civic)), hsl(217 91% 70%));
+    
+    --shadow-spark: 0 10px 30px -10px hsl(var(--accent) / 0.3);
+    --shadow-civic: 0 4px 20px -4px hsl(var(--civic) / 0.2);
+    --shadow-card: 0 2px 10px -2px hsl(220 14% 15% / 0.1);
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 14% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 220 14% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 220 14% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 220 14% 85%;
+    --primary-foreground: 220 14% 15%;
+
+    --secondary: 220 14% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 220 14% 15%;
+    --muted-foreground: 220 8% 60%;
+
+    --accent: 24 95% 53%; /* Keep orange accent */
+    --accent-foreground: 0 0% 100%;
+
+    --civic: 217 91% 65%; /* Slightly lighter blue for dark mode */
+    --civic-foreground: 0 0% 100%;
+
+    --success: 142 71% 50%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 14% 20%;
+    --input: 220 14% 20%;
+    --ring: 24 95% 53%;
+
+    /* Dark mode gradients */
+    --spark-gradient: linear-gradient(135deg, hsl(var(--accent)), hsl(24 100% 65%));
+    --stone-gradient: linear-gradient(135deg, hsl(220 14% 20%), hsl(220 14% 25%));
+    --civic-gradient: linear-gradient(135deg, hsl(var(--civic)), hsl(217 91% 75%));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Print styles for ballot preview */
+@media print {
+  body {
+    @apply text-black bg-white;
+  }
+  
+  .print\\:hidden {
+    display: none !important;
+  }
+  
+  .print\\:shadow-none {
+    box-shadow: none !important;
+  }
+  
+  .print\\:mb-6 {
+    margin-bottom: 1.5rem !important;
+  }
+}
