@@ -12,6 +12,7 @@ import { SocialProofScreen } from "@/screens/SocialProofScreen";
 import { OfficeMappingScreen } from "@/screens/OfficeMappingScreen";
 import { CandidatesScreen } from "@/screens/CandidatesScreen";
 import { BallotPreviewScreen } from "@/screens/BallotPreviewScreen";
+import { CastItScreen } from "@/screens/CastItScreen";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +95,15 @@ const App = () => {
           <BallotPreviewScreen
             starredCandidates={state.starredCandidates}
             starredMeasures={state.starredMeasures}
+            zipCode={state.userProfile.zipCode}
+            onContinue={handleNextStep}
+            onRestart={handleRestartApp}
+          />
+        );
+      
+      case 8:
+        return (
+          <CastItScreen
             zipCode={state.userProfile.zipCode}
             onRestart={handleRestartApp}
           />

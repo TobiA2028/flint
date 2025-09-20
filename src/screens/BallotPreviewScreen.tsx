@@ -8,11 +8,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Download, Mail, MapPin, Calendar, Share, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { ArrowRight } from 'lucide-react';
 
 interface BallotPreviewScreenProps {
   starredCandidates: string[];
   starredMeasures: string[];
   zipCode: string;
+  onContinue: () => void;
   onRestart: () => void;
 }
 
@@ -29,6 +31,7 @@ export const BallotPreviewScreen = ({
   starredCandidates, 
   starredMeasures, 
   zipCode,
+  onContinue,
   onRestart 
 }: BallotPreviewScreenProps) => {
   const [email, setEmail] = useState('');
@@ -154,117 +157,18 @@ export const BallotPreviewScreen = ({
               )}
             </Card>
 
-            {/* Voting Information */}
-            <Card className="p-6 shadow-card">
-              <h3 className="text-lg font-semibold text-card-foreground mb-4">
-                Next Steps
-              </h3>
-              
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-civic/5 p-4 rounded-lg">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Calendar className="w-5 h-5 text-civic" />
-                    <span className="font-medium text-card-foreground">Election Date</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    November 5, 2024
-                  </p>
-                </div>
-                
-                <div className="bg-accent/5 p-4 rounded-lg">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <MapPin className="w-5 h-5 text-accent" />
-                    <span className="font-medium text-card-foreground">Find Polling Place</span>
-                  </div>
-                  <button className="text-sm text-accent hover:text-accent/80">
-                    Search by address →
-                  </button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Email Section */}
-            <Card className="p-6 shadow-card print:hidden">
-              <h3 className="text-lg font-semibold text-card-foreground mb-4">
-                Save your results
-              </h3>
-              
-              <p className="text-muted-foreground mb-4">
-                Keep a record of your results by emailing them to yourself.
-              </p>
-              
-              <div className="space-y-4">
-                <div>
-                  <Input
-                    type="email"
-                    placeholder="email@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="mb-3"
-                  />
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="updates"
-                      checked={wantsUpdates}
-                      onCheckedChange={(checked) => setWantsUpdates(checked as boolean)}
-                    />
-                    <label htmlFor="updates" className="text-sm text-muted-foreground">
-                      I would like to be informed about future Vote Compass projects.
-                    </label>
-                  </div>
-                </div>
-                
-                <CTAButton
-                  onClick={handleEmailSubmit}
-                  disabled={!canSubmitEmail || isSubmitting}
-                  variant="civic"
-                  className="w-full"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-4 h-4 mr-2" />
-                      Email me my results
-                    </>
-                  )}
-                </CTAButton>
-              </div>
-            </Card>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 print:hidden">
-              <CTAButton
-                onClick={handlePrint}
-                variant="outline"
-                className="flex-1"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Print Preview
-              </CTAButton>
-              
-              <CTAButton
-                onClick={handleShare}
-                variant="outline"
-                className="flex-1"
-              >
-                <Share className="w-4 h-4 mr-2" />
-                Share
-              </CTAButton>
-              
-              <CTAButton
-                onClick={onRestart}
-                variant="spark"
-                className="flex-1"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Start Over
-              </CTAButton>
-            </div>
+            <div className="flex justify-center">
+          <CTAButton
+            onClick={onContinue}
+            variant="civic"
+            className="min-w-[200px]"
+          >
+            Continue
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </CTAButton>
+        </div>
           </div>
         ) : (
           <Card className="p-8 text-center shadow-card">
