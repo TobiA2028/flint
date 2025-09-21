@@ -7,10 +7,11 @@ import { Card } from '@/components/ui/card';
 import { Share, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { sendFollowUpEmail, isValidEmail, isEmailJSConfigured, EmailTemplateData } from '@/lib/emailService';
 
 interface ThankYouScreenProps {
   onRestart: () => void;
-  userProfile?: any; // Optional user profile data to include with signup
+  userProfile?: EmailTemplateData['userProfile']; // Optional user profile data to include with signup
 }
 
 export const ThankYouScreen = ({ onRestart, userProfile }: ThankYouScreenProps) => {
@@ -32,7 +33,7 @@ export const ThankYouScreen = ({ onRestart, userProfile }: ThankYouScreenProps) 
   };
 
   const handleEmailSubmit = async () => {
-    if (!email.includes('@') || email.length < 5) {
+    if (!isValidEmail(email)) {
       toast.error('Please enter a valid email address');
       return;
     }
@@ -40,25 +41,45 @@ export const ThankYouScreen = ({ onRestart, userProfile }: ThankYouScreenProps) 
     setIsSubmitting(true);
 
     try {
-      // Store email signup via API
-      const response = await apiClient.storeEmailSignup({
-        email,
-        source: 'thankyou',
-        wants_updates: true, // ThankYou screen implies they want updates
-        user_profile: userProfile,
-        session_id: Date.now().toString() // Simple session ID
-      });
+      // Check if EmailJS is configured
+      if (!isEmailJSConfigured()) {
+        toast.error('Email service is not configured. Please contact support.');
+        console.error('EmailJS is not properly configured');
+        setIsSubmitting(false);
+        return;
+      }
 
-      if (response.success) {
-        toast.success('Thank you! We\'ll keep you updated on civic engagement opportunities.');
+      // Send the follow-up email
+      console.log('📧 Sending follow-up email...', { email });
+
+      const emailResult = await sendFollowUpEmail(email);
+
+      if (emailResult.success) {
+        // Store email signup via API for analytics
+        const response = await apiClient.storeEmailSignup({
+          email,
+          source: 'thankyou',
+          wants_updates: true, // ThankYou screen implies they want updates
+          user_profile: userProfile,
+          session_id: Date.now().toString()
+        });
+
+        if (response.success) {
+          toast.success('Thank you! We\'ve sent you a welcome email and will keep you updated.');
+          console.log('✅ Follow-up email sent and signup stored');
+        } else {
+          toast.success('Welcome email sent! (Note: Signup tracking failed)');
+          console.warn('Email sent but signup storage failed:', response.error);
+        }
+
         setEmail('');
       } else {
-        toast.error('There was an issue saving your email. Please try again.');
-        console.error('Email signup failed:', response.error);
+        toast.error('Failed to send welcome email. Please try again.');
+        console.error('Email sending failed:', emailResult.error);
       }
     } catch (error) {
-      toast.error('Unable to save email. Please check your connection.');
-      console.error('Email signup error:', error);
+      toast.error('Unable to send email. Please check your connection.');
+      console.error('Email submission error:', error);
     }
 
     setIsSubmitting(false);

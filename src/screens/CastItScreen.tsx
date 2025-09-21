@@ -9,20 +9,27 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Download, Mail, Share, RefreshCw, Calendar, MapPin, Vote, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
+import { sendVotingGuideEmail, isValidEmail, isEmailJSConfigured, EmailTemplateData } from '@/lib/emailService';
+import { Candidate, BallotMeasure } from '@/types';
 
 interface CastItScreenProps {
   zipCode: string;
   onRestart: () => void;
-  userProfile?: any; // User profile data
-  ballotData?: any; // Ballot selections for email
+  userProfile?: EmailTemplateData['userProfile']; // User profile data
+  ballotData?: {
+    starred_candidates?: string[];
+    starred_measures?: string[];
+  }; // Ballot selections for email
+  starredCandidates?: Candidate[]; // Starred candidates for email
+  starredMeasures?: BallotMeasure[]; // Starred measures for email
 }
 
-export const CastItScreen = ({ zipCode, onRestart, userProfile, ballotData }: CastItScreenProps) => {
+export const CastItScreen = ({ zipCode, onRestart, userProfile, ballotData, starredCandidates = [], starredMeasures = [] }: CastItScreenProps) => {
   const [email, setEmail] = useState('');
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const canSubmitEmail = email.includes('@') && email.length > 5;
+  const canSubmitEmail = isValidEmail(email);
 
   const handleEmailSubmit = async () => {
     if (!canSubmitEmail) return;
@@ -30,26 +37,56 @@ export const CastItScreen = ({ zipCode, onRestart, userProfile, ballotData }: Ca
     setIsSubmitting(true);
 
     try {
-      // Store email signup via API with ballot data
-      const response = await apiClient.storeEmailSignup({
+      // Check if EmailJS is configured
+      if (!isEmailJSConfigured()) {
+        toast.error('Email service is not configured. Please contact support.');
+        console.error('EmailJS is not properly configured');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Send the actual voting guide email
+      console.log('📧 Sending voting guide email...', {
         email,
-        source: 'cast',
-        wants_updates: wantsUpdates,
-        user_profile: userProfile,
-        ballot_data: ballotData,
-        session_id: Date.now().toString() // Simple session ID
+        candidatesCount: starredCandidates.length,
+        measuresCount: starredMeasures.length
       });
 
-      if (response.success) {
-        toast.success('Results saved and sent to your email!');
-        // TODO: Trigger actual email sending with ballot data
+      const emailResult = await sendVotingGuideEmail(
+        email,
+        userProfile,
+        starredCandidates,
+        starredMeasures
+      );
+
+      if (emailResult.success) {
+        // Store email signup via API for analytics
+        const response = await apiClient.storeEmailSignup({
+          email,
+          source: 'cast',
+          wants_updates: wantsUpdates,
+          user_profile: userProfile,
+          ballot_data: {
+            starred_candidates: starredCandidates.map(c => c.id),
+            starred_measures: starredMeasures.map(m => m.id)
+          },
+          session_id: Date.now().toString()
+        });
+
+        if (response.success) {
+          toast.success('Voting guide sent to your email successfully!');
+          console.log('✅ Email sent and signup stored');
+        } else {
+          toast.success('Voting guide sent! (Note: Email signup tracking failed)');
+          console.warn('Email sent but signup storage failed:', response.error);
+        }
       } else {
-        toast.error('There was an issue saving your email. Please try again.');
-        console.error('Email signup failed:', response.error);
+        toast.error('Failed to send email. Please try again.');
+        console.error('Email sending failed:', emailResult.error);
       }
     } catch (error) {
-      toast.error('Unable to save email. Please check your connection.');
-      console.error('Email signup error:', error);
+      toast.error('Unable to send email. Please check your connection.');
+      console.error('Email submission error:', error);
     }
 
     setIsSubmitting(false);

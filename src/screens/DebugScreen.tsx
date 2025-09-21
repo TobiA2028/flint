@@ -3,6 +3,7 @@ import { CTAButton } from '@/components/CTAButton';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmailPreview } from '@/components/EmailPreview';
+import { EmailTest } from '@/components/EmailTest';
 import { Database, Mail, RefreshCw, Eye, Users } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
@@ -147,6 +148,9 @@ export const DebugScreen = ({ onBack }: DebugScreenProps) => {
                 )}
               </div>
             </Card>
+
+            {/* Email Testing */}
+            <EmailTest />
 
             {/* User Completions */}
             <Card className="p-6">
