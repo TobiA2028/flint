@@ -146,6 +146,55 @@ def create_app():
             "total_users": total_users
         })
 
+    @app.route('/api/issues', methods=['GET'])
+    def get_all_issues():
+        """
+        Get complete issue definitions with current counts.
+
+        NEW ENDPOINT: This is the primary endpoint for the frontend to fetch
+        all issue data. It returns complete issue objects (metadata + counts)
+        making the backend the single source of truth for issue definitions.
+
+        This replaces the previous approach where issue metadata was hardcoded
+        in the frontend and only frequencies were fetched from the backend.
+
+        Returns:
+            JSON: Array of complete issue objects
+
+        Example response:
+        {
+            "issues": [
+                {
+                    "id": "housing",
+                    "name": "Housing",
+                    "icon": "Home",
+                    "description": "Affordable housing, rent control, and homeownership programs",
+                    "count": 1247
+                },
+                {
+                    "id": "education",
+                    "name": "Education",
+                    "icon": "GraduationCap",
+                    "description": "School funding, curriculum, and educational opportunities",
+                    "count": 982
+                }
+            ],
+            "total_users": 3385,
+            "timestamp": "2025-01-20T10:30:00Z"
+        }
+        """
+        log_request('/api/issues', 'GET')
+
+        # Get complete issue objects from data store
+        issues = app.issue_store.get_all_issues()
+        total_users = app.issue_store.get_total_users()
+
+        return jsonify({
+            "issues": issues,
+            "total_users": total_users,
+            "timestamp": datetime.now().isoformat()
+        })
+
     @app.route('/api/issues/increment', methods=['POST'])
     def increment_issue_counts():
         """

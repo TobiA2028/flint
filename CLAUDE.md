@@ -107,6 +107,7 @@ The app uses a centralized state pattern via `useAppState` hook located at `src/
 - Manages 7-step flow progression (`currentStep`)
 - Tracks user profile data (issues, demographics, zipCode)
 - Handles starred candidates and ballot measures
+- **NEW**: Manages dynamic issue loading from backend with loading/error states
 
 ### Screen Flow Architecture
 The app follows a linear 7-step flow managed by `src/App.tsx`:
@@ -124,15 +125,18 @@ The app follows a linear 7-step flow managed by `src/App.tsx`:
 - **Custom Components**: Located in `src/components/` (app-specific components)
 - **Screens**: Located in `src/screens/` (main app screens)
 - **Types**: Centralized in `src/types/index.ts`
-- **Data**: Static data in `src/data/` (e.g., issues configuration)
+- **Data**: ~~Static data in `src/data/`~~ **MIGRATED**: Now loaded dynamically from backend
+- **API Layer**: Located in `src/lib/api.ts` (backend communication)
 
 ### Key Data Models
-- `AppState`: Overall app state structure
+- `AppState`: Overall app state structure (includes issue loading states)
 - `UserProfile`: User demographics and preferences
-- `Issue`: Civic issues configuration
+- `Issue`: Civic issues configuration (now loaded from backend)
 - `Candidate`: Political candidates with positions
 - `BallotMeasure`: Ballot measures with descriptions
 - `Office`: Political offices with relevance mapping
+- **NEW**: `IssueFromApi`: Backend response format for issues
+- **NEW**: `IssuesResponse`: Complete API response with metadata
 
 ### Styling Conventions
 - Uses Tailwind CSS with custom CSS variables
@@ -154,5 +158,7 @@ No test framework is currently configured. When adding tests, check the codebase
 - **ESLint**: Modern flat config with React hooks and TypeScript support
 - **PostCSS**: Configured for Tailwind CSS processing
 
-## Local Storage
+## Local Storage & Backend Integration
 The app persists state to localStorage and will restore user progress on reload. State is saved automatically on every change via `useAppState` hook.
+
+**Backend Integration**: Issue data is now loaded from the Flask backend on app initialization. The backend serves as the single source of truth for issue definitions and counts, eliminating data synchronization issues between frontend and backend.

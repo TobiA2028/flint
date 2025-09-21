@@ -1,25 +1,92 @@
 # Frontend-Backend Integration Plan
 
 ## Overview
-This document outlines the step-by-step process to connect the React frontend with the Flask backend, enabling real-time issue tracking and social proof functionality.
+This document outlines the implementation of backend-first issue management, making the Flask backend the single source of truth for all issue data.
 
-## Current State Analysis
+## Migration Status ✅ COMPLETED
 
-### Backend Status ✅ READY
-- Flask API running on `http://localhost:5000`
-- Three endpoints implemented:
-  - `GET /api/issues/frequencies` - Returns current issue counts
+### Backend Status ✅ ENHANCED
+- Flask API running on `http://localhost:5001`
+- Enhanced data store with complete issue objects (not just frequencies)
+- Four endpoints implemented:
+  - `GET /api/issues` - **NEW**: Returns complete issue definitions with counts
+  - `GET /api/issues/frequencies` - Returns current issue counts (legacy)
   - `POST /api/issues/increment` - Increments selected issues
   - `POST /api/issues/reset` - Resets to demo data
 - CORS configured for frontend communication
-- Data persistence working with duplicate prevention
+- Single source of truth for issue metadata and counts
 
-### Frontend Status 🔄 NEEDS INTEGRATION
+### Frontend Status ✅ MIGRATED
 - React app running on `http://localhost:8080`
-- Uses static data from `src/data/issues.ts`
-- Mock data in `SocialProofScreen`
-- No API calls implemented yet
-- User selections stored only in localStorage
+- **MIGRATED**: Dynamic issue loading from backend
+- **REMOVED**: Static data dependency on `src/data/issues.ts`
+- **ADDED**: Complete API integration with loading/error states
+- **ENHANCED**: useAppState hook manages issue loading
+- User selections stored in localStorage + sent to backend
+
+---
+
+## ✅ MIGRATION COMPLETED: Backend-First Issue Management
+
+### What Was Changed
+
+#### Backend Enhancements
+1. **Enhanced Data Store** (`backend/data_store.py`):
+   - Stores complete issue objects instead of just frequencies
+   - Added `get_all_issues()` method to return full issue data
+   - Maintains backward compatibility with existing `get_frequencies()`
+   - Single source of truth for issue metadata (id, name, icon, description, count)
+
+2. **New API Endpoint** (`backend/app.py`):
+   - Added `GET /api/issues` endpoint
+   - Returns complete issue objects with current counts
+   - Provides timestamp and total_users metadata
+   - Eliminates frontend-backend data synchronization issues
+
+#### Frontend Migration
+1. **API Client Enhancement** (`src/lib/api.ts`):
+   - Added `getIssues()` method for fetching complete issue data
+   - Added TypeScript interfaces: `IssueFromApi`, `IssuesResponse`
+   - Maintains existing `getIssueFrequencies()` for backward compatibility
+   - Enhanced error handling and logging
+
+2. **State Management Update** (`src/hooks/useAppState.ts`):
+   - Added issues loading state management
+   - Auto-loads issues on app initialization
+   - Provides refresh functionality
+   - Handles loading/error states gracefully
+
+3. **Component Updates**:
+   - **IssueSelectionScreen**: Now receives issues as props with loading states
+   - **OfficeMappingScreen**: Updated to use dynamic issues instead of static imports
+   - **CandidatesScreen**: Updated to use dynamic issues instead of static imports
+   - **App.tsx**: Passes issue data to all screens that need it
+
+4. **Static Data Deprecation** (`src/data/issues.ts`):
+   - Converted to legacy documentation file
+   - All static ISSUES imports removed from components
+   - Added migration notes and deprecation warnings
+
+### Benefits Achieved
+
+1. **Single Source of Truth**: All issue data now comes from backend
+2. **Data Consistency**: No more sync issues between frontend and backend
+3. **Scalability**: Easy to add/modify issues through backend only
+4. **Better UX**: Loading states and error handling for issue loading
+5. **Type Safety**: Full TypeScript support maintained
+6. **Maintainability**: Easier to debug and modify issue data
+
+### Architecture Flow
+
+```
+Backend (Flask)
+└── data_store.py (complete issue objects)
+    └── /api/issues endpoint
+        └── Frontend API Client
+            └── useAppState hook
+                └── App.tsx
+                    └── Screen Components
+```
 
 ---
 

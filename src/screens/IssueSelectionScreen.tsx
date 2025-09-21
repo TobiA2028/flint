@@ -3,21 +3,30 @@ import { IssueCard } from '@/components/IssueCard';
 import { CTAButton } from '@/components/CTAButton';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { MascotGuide } from '@/components/MascotGuide';
-import { ISSUES } from '@/data/issues';
-import { ArrowRight, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { ArrowRight, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { SparkHeader } from '@/components/SparkHeader';
 import { apiClient, generateSessionId } from '@/lib/api';
+import { Issue } from '@/types';
 
 interface IssueSelectionScreenProps {
   selectedIssues: string[];
   onIssuesChange: (issues: string[]) => void;
   onContinue: () => void;
+  // New props for backend-driven issues
+  issues: Issue[];
+  issuesLoading: boolean;
+  issuesError: string | null;
+  onRefreshIssues: () => void;
 }
 
 export const IssueSelectionScreen = ({
   selectedIssues,
   onIssuesChange,
-  onContinue
+  onContinue,
+  issues,
+  issuesLoading,
+  issuesError,
+  onRefreshIssues
 }: IssueSelectionScreenProps) => {
   const maxSelections = 3;
   const canContinue = selectedIssues.length === maxSelections;
@@ -214,17 +223,59 @@ export const IssueSelectionScreen = ({
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-          {ISSUES.map(issue => (
-            <IssueCard
-              key={issue.id}
-              issue={issue}
-              isSelected={selectedIssues.includes(issue.id)}
-              onSelect={handleIssueSelect}
-              disabled={!selectedIssues.includes(issue.id) && selectedIssues.length >= maxSelections}
-            />
-          ))}
-        </div>
+        {/* ================================================================ */}
+        {/* DYNAMIC ISSUES LOADING SECTION */}
+        {/* ================================================================ */}
+
+        {issuesLoading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-accent mb-4" />
+            <p className="text-muted-foreground">Loading issues from backend...</p>
+          </div>
+        ) : issuesError ? (
+          <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2 text-red-700">
+                <AlertCircle className="w-5 h-5" />
+                <p className="font-medium">Failed to Load Issues</p>
+              </div>
+              <button
+                onClick={onRefreshIssues}
+                className="flex items-center space-x-1 text-red-600 hover:text-red-700 text-sm"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Retry</span>
+              </button>
+            </div>
+            <p className="text-red-600 text-sm mb-2">{issuesError}</p>
+            <p className="text-red-500 text-xs">
+              💡 Make sure your backend server is running on port 5001
+            </p>
+          </div>
+        ) : issues.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+            {issues.map(issue => (
+              <IssueCard
+                key={issue.id}
+                issue={issue}
+                isSelected={selectedIssues.includes(issue.id)}
+                onSelect={handleIssueSelect}
+                disabled={!selectedIssues.includes(issue.id) && selectedIssues.length >= maxSelections}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-muted-foreground mb-4">No issues available</p>
+            <button
+              onClick={onRefreshIssues}
+              className="flex items-center space-x-2 text-accent hover:text-accent-dark"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Refresh</span>
+            </button>
+          </div>
+        )}
         
         {/* ================================================================ */}
         {/* STATUS FEEDBACK SECTION */}

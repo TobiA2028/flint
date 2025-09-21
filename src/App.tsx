@@ -29,7 +29,10 @@ const App = () => {
     toggleStarredMeasure,
     setFeedback,
     setFinalScreenType,
-    resetState
+    resetState,
+    // New issue management functions
+    loadIssues,
+    refreshIssues
   } = useAppState();
 
   const handleNextStep = () => {
@@ -64,6 +67,18 @@ const App = () => {
     setCurrentStep(10); // Go to ThankYouScreen
   };
 
+  // Check for reset parameter on app load
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reset') === 'true') {
+      console.log('🔄 Reset parameter detected, clearing app state...');
+      resetState();
+      // Clean up the URL by removing the reset parameter
+      const newUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [resetState]);
+
   // Scroll to top whenever the current step changes
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -95,6 +110,11 @@ const App = () => {
             selectedIssues={state.userProfile.selectedIssues}
             onIssuesChange={handleSelectIssues}
             onContinue={handleNextStep}
+            // New backend-driven issue props
+            issues={state.issues}
+            issuesLoading={state.issuesLoading}
+            issuesError={state.issuesError}
+            onRefreshIssues={refreshIssues}
           />
         );
       
@@ -113,6 +133,7 @@ const App = () => {
             selectedIssues={state.userProfile.selectedIssues}
             zipCode={state.userProfile.zipCode}
             onContinue={handleNextStep}
+            issues={state.issues}
           />
         );
       
@@ -121,6 +142,7 @@ const App = () => {
           <OfficeMappingScreen
             selectedIssues={state.userProfile.selectedIssues}
             onContinue={handleNextStep}
+            issues={state.issues}
           />
         );
       
@@ -133,6 +155,7 @@ const App = () => {
             onToggleStarredCandidate={toggleStarredCandidate}
             onToggleStarredMeasure={toggleStarredMeasure}
             onContinue={handleNextStep}
+            issues={state.issues}
           />
         );
       

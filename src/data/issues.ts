@@ -1,88 +1,29 @@
-import { Issue } from '@/types';
+/**
+ * LEGACY FILE - DEPRECATED
+ *
+ * This file previously contained hardcoded issue definitions.
+ *
+ * As of the backend-first issue management implementation, issue data
+ * is now served from the Flask backend as the single source of truth.
+ *
+ * All issue data is now fetched from the backend via:
+ * - Backend: /api/issues endpoint
+ * - Frontend: apiClient.getIssues() method
+ * - State: useAppState hook manages issues loading
+ *
+ * This file is kept for documentation purposes but should not be imported.
+ * If you need issue data, use the app state: const { issues } = useAppState();
+ *
+ * Migration completed: [date]
+ * - Backend data_store.py now stores complete issue objects
+ * - Frontend components updated to use dynamic issues
+ * - Static imports removed from all screens
+ */
 
-export const ISSUES: Issue[] = [
-  {
-    id: 'housing',
-    name: 'Housing',
-    icon: 'Home',
-    description: 'Affordable housing, rent control, and homeownership programs',
-    count: 0,
-  },
-  {
-    id: 'education',
-    name: 'Education',
-    icon: 'GraduationCap',
-    description: 'School funding, curriculum, and educational opportunities',
-    count: 0,
-  },
-  {
-    id: 'healthcare',
-    name: 'Healthcare',
-    icon: 'Heart',
-    description: 'Healthcare access, costs, and public health initiatives',
-    count: 0,
-  },
-  {
-    id: 'environment',
-    name: 'Environment',
-    icon: 'Leaf',
-    description: 'Climate change, pollution, and environmental protection',
-    count: 0,
-  },
-  {
-    id: 'transportation',
-    name: 'Transportation',
-    icon: 'Car',
-    description: 'Public transit, roads, and transportation infrastructure',
-    count: 0,
-  },
-  {
-    id: 'safety',
-    name: 'Public Safety',
-    icon: 'Shield',
-    description: 'Police reform, crime prevention, and community safety',
-    count: 0,
-  },
-  {
-    id: 'economy',
-    name: 'Economy',
-    icon: 'DollarSign',
-    description: 'Jobs, minimum wage, and economic development',
-    count: 0
-  },
-  {
-    id: 'infrastructure',
-    name: 'Infrastructure',
-    icon: 'Construction',
-    description: 'Roads, bridges, water systems, and public facilities',
-    count: 0
-  },
-  {
-    id: 'immigration',
-    name: 'Immigration',
-    icon: 'Users',
-    description: 'Immigration policy and immigrant services',
-    count: 0
-  },
-  {
-    id: 'taxes',
-    name: 'Taxes',
-    icon: 'Calculator',
-    description: 'Tax policy, rates, and government spending',
-    count: 0
-  },
-  {
-    id: 'rights',
-    name: 'Civil Rights',
-    icon: 'Scale',
-    description: 'Equality, discrimination, and civil liberties',
-    count: 0
-  },
-  {
-    id: 'seniors',
-    name: 'Senior Services',
-    icon: 'UserCheck',
-    description: 'Elder care, social security, and senior programs',
-    count: 0
-  }
-];
+// This export is deprecated and should not be used
+// @deprecated Use useAppState().state.issues instead
+export const LEGACY_ISSUES_NOTICE = {
+  message: "This file is deprecated. Issue data is now managed by the backend.",
+  migration: "Use useAppState().state.issues to access current issues",
+  backend_endpoint: "/api/issues"
+};

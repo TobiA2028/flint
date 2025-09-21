@@ -15,91 +15,193 @@ Note: In a production app, this would be replaced with a real database
 like PostgreSQL, but the interface would remain similar.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import json
 from datetime import datetime
 
 class IssueDataStore:
     """
-    In-memory data store for issue frequency tracking.
+    In-memory data store for complete issue management.
 
-    This class manages all the data for social proof functionality,
-    including issue frequencies and user tracking.
+    This class now serves as the single source of truth for all issue data,
+    storing complete issue objects (metadata + counts) instead of just frequencies.
+    This eliminates data duplication between frontend and backend.
     """
 
     def __init__(self):
         """
-        Initialize the data store with demo data.
+        Initialize the data store with complete issue objects.
 
-        Sets up the initial issue frequencies and any other data
-        structures needed for the application.
+        Now stores full issue metadata (id, name, icon, description, count)
+        making the backend the authoritative source for all issue data.
         """
-        # TODO: Initialize your data structures
-        # - Issue frequencies (dict mapping issue_id -> count)
-        # - Total user count
-        # - Maybe user tracking to prevent duplicates
-
-        # Example structure:
-        self.issue_frequencies = {}
+        # Store complete issue objects instead of just frequencies
+        # This becomes our single source of truth for issue data
+        self.issues = {}  # Dict[str, Dict] - issue_id -> complete issue object
         self.total_users = 0
         self.user_sessions = set()  # Track user sessions to prevent duplicates
 
-        # Initialize with demo data
+        # Initialize with demo data that includes full issue definitions
         self._load_demo_data()
 
     def _load_demo_data(self):
         """
-        Load realistic demo data for social proof.
+        Load complete issue definitions with realistic demo frequencies.
 
-        This gives us believable numbers for the hackathon demo.
+        This replaces the previous approach of storing just frequencies.
+        Now we store the complete issue objects that were previously
+        hardcoded in the frontend, making the backend the single source of truth.
         """
-        # TODO: Implement demo data loading
-        # You should set realistic frequencies for each issue
-        # These should match the issue IDs from your React frontend
-
-        # Hint: Look at src/data/issues.ts to see the issue IDs
-        # Example issues: housing, education, healthcare, environment, etc.
-
-        # Demo data (replace with proper implementation)
-        demo_frequencies = {
-            "housing": 1247,
-            "education": 982,
-            "healthcare": 1156,
-            "environment": 891,
-            "transportation": 743,
-            "safety": 1089,
-            "economy": 1298,
-            "infrastructure": 567,
-            "immigration": 432,
-            "taxes": 789,
-            "rights": 923,
-            "seniors": 445
+        # Complete issue definitions with metadata + demo counts
+        # This data was previously split between frontend (metadata) and backend (counts)
+        demo_issues = {
+            "housing": {
+                "id": "housing",
+                "name": "Housing",
+                "icon": "Home",
+                "description": "Affordable housing, rent control, and homeownership programs",
+                "count": 1247
+            },
+            "education": {
+                "id": "education",
+                "name": "Education",
+                "icon": "GraduationCap",
+                "description": "School funding, curriculum, and educational opportunities",
+                "count": 982
+            },
+            "healthcare": {
+                "id": "healthcare",
+                "name": "Healthcare",
+                "icon": "Heart",
+                "description": "Healthcare access, costs, and public health initiatives",
+                "count": 1156
+            },
+            "environment": {
+                "id": "environment",
+                "name": "Environment",
+                "icon": "Leaf",
+                "description": "Climate change, pollution, and environmental protection",
+                "count": 891
+            },
+            "transportation": {
+                "id": "transportation",
+                "name": "Transportation",
+                "icon": "Car",
+                "description": "Public transit, roads, and transportation infrastructure",
+                "count": 743
+            },
+            "safety": {
+                "id": "safety",
+                "name": "Public Safety",
+                "icon": "Shield",
+                "description": "Police reform, crime prevention, and community safety",
+                "count": 1089
+            },
+            "economy": {
+                "id": "economy",
+                "name": "Economy",
+                "icon": "DollarSign",
+                "description": "Jobs, minimum wage, and economic development",
+                "count": 1298
+            },
+            "infrastructure": {
+                "id": "infrastructure",
+                "name": "Infrastructure",
+                "icon": "Construction",
+                "description": "Roads, bridges, water systems, and public facilities",
+                "count": 567
+            },
+            "immigration": {
+                "id": "immigration",
+                "name": "Immigration",
+                "icon": "Users",
+                "description": "Immigration policy and immigrant services",
+                "count": 432
+            },
+            "taxes": {
+                "id": "taxes",
+                "name": "Taxes",
+                "icon": "Calculator",
+                "description": "Tax policy, rates, and government spending",
+                "count": 789
+            },
+            "rights": {
+                "id": "rights",
+                "name": "Civil Rights",
+                "icon": "Scale",
+                "description": "Equality, discrimination, and civil liberties",
+                "count": 923
+            },
+            "seniors": {
+                "id": "seniors",
+                "name": "Senior Services",
+                "icon": "UserCheck",
+                "description": "Elder care, social security, and senior programs",
+                "count": 445
+            }
         }
 
-        self.issue_frequencies = demo_frequencies
-        self.total_users = len(demo_frequencies) * 100  # Roughly estimate
+        self.issues = demo_issues
+        self.total_users = len(demo_issues) * 100  # Roughly estimate
 
-        print("📊 Demo data loaded successfully!")
+        print("📊 Complete issue data loaded successfully!")
+        print(f"   Loaded {len(self.issues)} issues with full metadata")
 
     def get_frequencies(self) -> Dict[str, int]:
         """
         Get current frequency counts for all issues.
 
+        LEGACY METHOD: Maintained for backwards compatibility with existing API endpoints.
+        New code should use get_all_issues() to get complete issue objects.
+
         Returns:
             Dict[str, int]: Mapping of issue_id to frequency count
+        """
+        # Extract just the counts from the complete issue objects
+        return {issue_id: issue_data["count"] for issue_id, issue_data in self.issues.items()}
+
+    def get_all_issues(self) -> List[Dict[str, Any]]:
+        """
+        Get all complete issue objects with metadata and current counts.
+
+        This is the new primary method for retrieving issue data,
+        providing everything the frontend needs in one call.
+
+        Returns:
+            List[Dict]: Complete issue objects matching frontend TypeScript interface
 
         Example:
-            {
-                "housing": 1247,
-                "education": 982,
-                "healthcare": 1156
-            }
+            [
+                {
+                    "id": "housing",
+                    "name": "Housing",
+                    "icon": "Home",
+                    "description": "Affordable housing, rent control, and homeownership programs",
+                    "count": 1247
+                },
+                ...
+            ]
         """
-        return self.issue_frequencies
+        return list(self.issues.values())
+
+    def get_issue_by_id(self, issue_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get a specific issue object by its ID.
+
+        Args:
+            issue_id (str): The issue identifier
+
+        Returns:
+            Optional[Dict]: Issue object if found, None otherwise
+        """
+        return self.issues.get(issue_id)
 
     def increment_issues(self, issue_ids: List[str], user_id: Optional[str] = None) -> bool:
         """
         Increment the frequency count for specified issues.
+
+        Updated to work with the new complete issue object structure.
+        Now increments the 'count' field within each issue object.
 
         Args:
             issue_ids (List[str]): List of issue IDs to increment
@@ -107,38 +209,33 @@ class IssueDataStore:
 
         Returns:
             bool: True if successful, False if user already counted
-
-        Example:
-            success = store.increment_issues(["housing", "education"], "user123")
         """
-        # TODO: Implement this method
-        # You need to:
-        # 1. Check if user_id has already been counted (if provided)
-        # 2. Increment the frequency for each issue in issue_ids
-        # 3. Update total_users count
-        # 4. Track the user_id to prevent duplicates
-        # 5. Return True if successful
-
         # Validation
         if not issue_ids or not isinstance(issue_ids, list):
+            print("❌ Invalid issue_ids provided")
             return False
 
         # Check for duplicate users
         if user_id and user_id in self.user_sessions:
+            print(f"❌ User {user_id} has already been counted")
             return False
 
-        # Increment frequencies
+        # Increment counts in the complete issue objects
+        updated_issues = []
         for issue_id in issue_ids:
-            if issue_id in self.issue_frequencies:
-                self.issue_frequencies[issue_id] += 1
+            if issue_id in self.issues:
+                self.issues[issue_id]["count"] += 1
+                updated_issues.append(issue_id)
+            else:
+                print(f"⚠️  Issue ID '{issue_id}' not found in data store")
 
         # Track user and update total
         if user_id:
             self.user_sessions.add(user_id)
         self.total_users += 1
 
-        print(f"✅ Incremented frequencies for: {issue_ids}")
-        return True
+        print(f"✅ Incremented counts for: {updated_issues}")
+        return len(updated_issues) > 0
 
     def reset_to_demo_data(self) -> None:
         """
@@ -147,21 +244,15 @@ class IssueDataStore:
         This is useful for demo purposes - you can reset between
         demonstrations to show fresh social proof numbers.
         """
-        # TODO: Implement this method
-        # You need to:
-        # 1. Clear current data
-        # 2. Reload demo data
-        # 3. Reset user tracking
-
-        # TODO: Clear existing data
-        self.issue_frequencies.clear()
+        # Clear existing data
+        self.issues.clear()
         self.user_sessions.clear()
         self.total_users = 0
 
-        # TODO: Reload demo data
+        # Reload demo data with complete issue objects
         self._load_demo_data()
 
-        print("🔄 Data reset to demo values")
+        print("🔄 Complete issue data reset to demo values")
 
     def get_total_users(self) -> int:
         """
@@ -179,7 +270,7 @@ class IssueDataStore:
         Returns:
             List[str]: List of issue identifiers
         """
-        return list(self.issue_frequencies.keys())
+        return list(self.issues.keys())
 
     # ============================================================================
     # ADVANCED FEATURES (Optional for later phases)
@@ -189,16 +280,15 @@ class IssueDataStore:
         """
         Export all data as a dictionary for backup or analysis.
 
-        This could be useful for saving data between server restarts
-        or for analytics purposes.
+        Now exports complete issue objects instead of just frequencies.
 
         Returns:
             Dict: All data in exportable format
         """
-        # TODO: Implement this method (optional)
         return {
-            "issue_frequencies": self.issue_frequencies,
+            "issues": self.issues,
             "total_users": self.total_users,
+            "user_sessions_count": len(self.user_sessions),
             "export_timestamp": datetime.now().isoformat()
         }
 

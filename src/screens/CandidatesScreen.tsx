@@ -5,8 +5,7 @@ import { MascotGuide } from '@/components/MascotGuide';
 import { CandidateCard } from '@/components/CandidateCard';
 import { BallotMeasureCard } from '@/components/BallotMeasureCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ISSUES } from '@/data/issues';
-import { Candidate, BallotMeasure } from '@/types';
+import { Candidate, BallotMeasure, Issue } from '@/types';
 import { Vote, ArrowRight } from 'lucide-react';
 
 interface CandidatesScreenProps {
@@ -16,6 +15,7 @@ interface CandidatesScreenProps {
   onToggleStarredCandidate: (candidateId: string) => void;
   onToggleStarredMeasure: (measureId: string) => void;
   onContinue: () => void;
+  issues: Issue[];
 }
 
 // Mock data - in real app would come from API
@@ -86,7 +86,8 @@ export const CandidatesScreen = ({
   starredMeasures,
   onToggleStarredCandidate,
   onToggleStarredMeasure,
-  onContinue
+  onContinue,
+  issues
 }: CandidatesScreenProps) => {
   const [activeTab, setActiveTab] = useState('candidates');
   
@@ -95,8 +96,8 @@ export const CandidatesScreen = ({
 
   const getRelevantIssuesForCandidate = (candidate: Candidate) => {
     // In real app, would match candidate positions to user's selected issues
-    return selectedIssues.slice(0, 2).map(id => 
-      ISSUES.find(issue => issue.id === id)?.name
+    return selectedIssues.slice(0, 2).map(id =>
+      issues.find(issue => issue.id === id)?.name
     ).filter(Boolean) as string[];
   };
 

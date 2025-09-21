@@ -47,4 +47,8 @@ export interface AppState {
   starredMeasures: string[];
   feedback: string;
   finalScreenType: 'cast' | 'thankyou' | null;
+  // New fields for backend-driven issue management
+  issues: Issue[];
+  issuesLoading: boolean;
+  issuesError: string | null;
 }

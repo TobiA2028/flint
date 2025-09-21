@@ -3,17 +3,19 @@ import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { MascotGuide } from '@/components/MascotGuide';
 import { OfficeCard } from '@/components/OfficeCard';
 import { BallotMeasureCard } from '@/components/BallotMeasureCard';
-import { ISSUES } from '@/data/issues';
 import { ArrowRight } from 'lucide-react';
 import { SparkHeader } from '@/components/SparkHeader';
+import { Issue } from '@/types';
 
 interface OfficeMappingScreenProps {
   selectedIssues: string[];
   onContinue: () => void;
+  // Add issues prop for backend-driven data
+  issues: Issue[];
 }
 
 // Mock office data - in real app would come from API
-const getOfficesForIssues = (issueIds: string[]) => {
+const getOfficesForIssues = (issueIds: string[], issues: Issue[]) => {
   const officeMapping: Record<string, Array<{
     id: string;
     name: string;
@@ -78,7 +80,7 @@ const getOfficesForIssues = (issueIds: string[]) => {
   };
 
   return issueIds.map(issueId => {
-    const issue = ISSUES.find(i => i.id === issueId);
+    const issue = issues.find(i => i.id === issueId);
     const offices = officeMapping[issueId] || [
       {
         id: 'city-council-general',
@@ -97,7 +99,7 @@ const getOfficesForIssues = (issueIds: string[]) => {
 };
 
 // Mock ballot measures data - only for selected issues
-const getBallotMeasuresForIssues = (issueIds: string[]) => {
+const getBallotMeasuresForIssues = (issueIds: string[], issues: Issue[]) => {
   const ballotMeasureMapping: Record<string, Array<{
     id: string;
     title: string;
@@ -139,7 +141,7 @@ const getBallotMeasuresForIssues = (issueIds: string[]) => {
   };
 
   return issueIds.map(issueId => {
-    const issue = ISSUES.find(i => i.id === issueId);
+    const issue = issues.find(i => i.id === issueId);
     const measures = ballotMeasureMapping[issueId] || [];
     
     return {
@@ -149,9 +151,9 @@ const getBallotMeasuresForIssues = (issueIds: string[]) => {
   }).filter(item => item.measures.length > 0); // Only return issues that have ballot measures
 };
 
-export const OfficeMappingScreen = ({ selectedIssues, onContinue }: OfficeMappingScreenProps) => {
-  const mappedOffices = getOfficesForIssues(selectedIssues);
-  const mappedBallotMeasures = getBallotMeasuresForIssues(selectedIssues);
+export const OfficeMappingScreen = ({ selectedIssues, onContinue, issues }: OfficeMappingScreenProps) => {
+  const mappedOffices = getOfficesForIssues(selectedIssues, issues);
+  const mappedBallotMeasures = getBallotMeasuresForIssues(selectedIssues, issues);
 
   return (
     <div className="min-h-screen bg-background p-6">

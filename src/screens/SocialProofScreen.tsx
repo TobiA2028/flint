@@ -2,18 +2,19 @@ import { useState, useEffect } from 'react';
 import { CTAButton } from '@/components/CTAButton';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { MascotGuide } from '@/components/MascotGuide';
-import { ISSUES } from '@/data/issues';
 import { Users, TrendingUp, ArrowRight, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { SparkHeader } from '@/components/SparkHeader';
 import { apiClient, type IssueFrequencies } from '@/lib/api';
+import { Issue } from '@/types';
 
 interface SocialProofScreenProps {
   selectedIssues: string[];
   zipCode: string;
   onContinue: () => void;
+  issues: Issue[];
 }
 
-export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue }: SocialProofScreenProps) => {
+export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue, issues }: SocialProofScreenProps) => {
   // ========================================================================
   // API DATA STATE MANAGEMENT
   // ========================================================================
@@ -46,7 +47,7 @@ export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue }: Socia
 
   const getIssueNames = () => {
     return selectedIssues.map(id =>
-      ISSUES.find(issue => issue.id === id)?.name
+      issues.find(issue => issue.id === id)?.name
     ).filter(Boolean);
   };
 
@@ -92,7 +93,7 @@ export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue }: Socia
         totalPeople: 0,
         issueEngagement: selectedIssues.map(issueId => ({
           id: issueId,
-          name: ISSUES.find(issue => issue.id === issueId)?.name || '',
+          name: issues.find(issue => issue.id === issueId)?.name || '',
           count: 0
         }))
       };
@@ -104,7 +105,7 @@ export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue }: Socia
       totalPeople: issueData.total_users,
       issueEngagement: selectedIssues.map(issueId => ({
         id: issueId,
-        name: ISSUES.find(issue => issue.id === issueId)?.name || '',
+        name: issues.find(issue => issue.id === issueId)?.name || '',
         count: issueData.frequencies[issueId] || 0
       }))
     };

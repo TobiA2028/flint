@@ -40,6 +40,32 @@ export interface IssueFrequencies {
 }
 
 /**
+ * Complete issue object returned by /api/issues
+ *
+ * This matches the Issue interface from the frontend types and includes
+ * both metadata and current count from the backend.
+ */
+export interface IssueFromApi {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  count: number;
+}
+
+/**
+ * Response from /api/issues endpoint
+ *
+ * This returns all issue definitions with current counts,
+ * making the backend the single source of truth.
+ */
+export interface IssuesResponse {
+  issues: IssueFromApi[];
+  total_users: number;
+  timestamp: string;
+}
+
+/**
  * Request body for /api/issues/increment
  *
  * This defines what data we need to send when a user selects their issues.
@@ -166,10 +192,63 @@ export class ApiClient {
   }
 
   /**
+   * Get all issue definitions with current counts
+   *
+   * NEW PRIMARY METHOD: This fetches complete issue objects (metadata + counts)
+   * from the backend, making it the single source of truth for issue data.
+   *
+   * This replaces the previous approach where issue metadata was hardcoded
+   * in the frontend and only frequencies were fetched separately.
+   *
+   * Usage in components:
+   * ```typescript
+   * const api = new ApiClient();
+   * const response = await api.getIssues();
+   * if (response.success) {
+   *   console.log('Complete issue data:', response.data.issues);
+   * }
+   * ```
+   */
+  async getIssues(): Promise<ApiResponse<IssuesResponse>> {
+    try {
+      console.log('🔄 Fetching complete issue definitions from backend...');
+
+      const response = await fetchWithTimeout(`${this.baseUrl}/api/issues`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: IssuesResponse = await response.json();
+
+      console.log('✅ Successfully fetched issue definitions:', {
+        count: data.issues.length,
+        total_users: data.total_users,
+        timestamp: data.timestamp
+      });
+
+      return {
+        data,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ Failed to fetch issue definitions:', error);
+
+      return {
+        data: { issues: [], total_users: 0, timestamp: new Date().toISOString() },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
    * Get current issue frequencies and total user count
    *
-   * This method fetches the social proof data that shows how many
-   * people in the community have selected each issue.
+   * LEGACY METHOD: This method is maintained for backwards compatibility
+   * with existing social proof functionality. New code should use getIssues()
+   * which provides complete issue data in one call.
    *
    * Usage in components:
    * ```typescript
