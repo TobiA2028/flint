@@ -167,7 +167,7 @@ export const SocialProofScreen = ({ selectedIssues, zipCode, onContinue, issues 
 
           <SparkHeader
             title="You are not alone!"
-            subtitle="People in your community care about solving these issues."
+            subtitle="Other Houstonians care about these issues too."
           />
 
           {/* TODO: Real-time Data Status */}

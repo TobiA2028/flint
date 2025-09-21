@@ -72,7 +72,7 @@ export const DemographicsScreen = ({
           
           <SparkHeader
             title="Who are you?"
-            subtitle="Help us connect you to your local community and relevant issues."
+            subtitle="Let's connect you to your local community!"
           />
         </div>
         
@@ -150,7 +150,7 @@ export const DemographicsScreen = ({
             variant={'spark'}
             className="min-w-[250px]"
           >
-            Connect me to my Community
+            Find My Community
             <ArrowRight className="w-5 h-5 ml-2" />
           </CTAButton>
         </div>

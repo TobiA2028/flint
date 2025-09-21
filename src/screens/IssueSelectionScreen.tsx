@@ -212,7 +212,7 @@ export const IssueSelectionScreen = ({
           />
           
           <p className="text-muted-foreground mb-2">
-            Choose exactly <span className="font-semibold text-accent">{maxSelections} issues</span> that you care about
+            Pick exactly <span className="font-semibold text-accent">{maxSelections} challenges</span> that you want Houston to prioritize
           </p>
           
           <div className="flex justify-center items-center space-x-2 text-sm">
