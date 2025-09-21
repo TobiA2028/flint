@@ -190,13 +190,10 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue, issues }: Offi
     return selectedIssues.map(issueId => {
       const issue = issues.find(i => i.id === issueId);
 
-      if (!issue) return null; // Handle missing issue gracefully
+      if (!issue) return null;
 
-      // PERFORMANCE OPTIMIZATION: Direct lookup from issue.related_measures
-      // Instead of filtering all measures, get measure IDs directly from issue
       const measureIds = issue.related_measures || [];
 
-      // Use Map lookup for O(1) access to ballot measure objects
       const relevantMeasures = measureIds
         .map(measureId => ballotMeasureMap.get(measureId))
         .filter((measure): measure is BallotMeasure => measure !== undefined);
@@ -205,9 +202,8 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue, issues }: Offi
         issue,
         entities: relevantMeasures
       };
-    }).filter((mapping): mapping is IssueMapping<BallotMeasure> =>
-      mapping !== null && mapping.entities.length > 0
-    ); // Only show issues with measures
+    }).filter((mapping): mapping is IssueMapping<BallotMeasure> => mapping !== null);
+    // ✅ keep all issues, even if entities.length === 0
   };
 
   const mappedOffices = organizeOfficesByIssue();
@@ -244,20 +240,20 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue, issues }: Offi
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-3xl mx-auto">
         <ProgressIndicator currentStep={5} totalSteps={10} />
-        
+
         <div className="text-center mb-8">
-          <MascotGuide 
+          <MascotGuide
             size="md"
             className="mb-6"
           />
-          
+
           <SparkHeader
             title="Your vote is your spark!"
             subtitle="These local offices and ballot items directly impact what you care about."
           />
 
         </div>
-        
+
         <div className="space-y-6 mb-8">
           {/* Loading state */}
           {isLoading && (
@@ -309,7 +305,7 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue, issues }: Offi
                         <BallotMeasureCard
                           measure={{ ...measure, isStarred: false }}
                           isStarred={false}
-                          onToggleStar={() => {}} // Display only, no starring on this screen
+                          onToggleStar={() => { }} // Display only, no starring on this screen
                           showStar={false}
                         />
                         {/* STATE tag overlay - positioned to match OfficeCard level tags */}
@@ -337,7 +333,7 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue, issues }: Offi
             </div>
           )}
         </div>
-        
+
         <div className="flex justify-center">
           <CTAButton
             onClick={onContinue}
