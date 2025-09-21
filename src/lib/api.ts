@@ -544,7 +544,7 @@ export class ApiClient {
    * const response = await api.getCandidates({ issueIds: ['housing', 'environment'] });
    * ```
    */
-  async getCandidates(filters?: { officeIds?: string[]; issueIds?: string[] }): Promise<ApiResponse<import('@/types').CandidatesResponse>> {
+  async getCandidates(filters?: { officeIds?: string[]}): Promise<ApiResponse<import('@/types').CandidatesResponse>> {
     try {
       console.log('🔄 Fetching candidates from backend...', filters);
 

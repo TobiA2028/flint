@@ -401,9 +401,12 @@ class SupabaseDataStore:
                 return []
 
             # Get candidates directly by their office_id
-            candidates_result = self.supabase.table('candidates').select('*').filter(
-                'office_id', 'in', office_ids
-            ).execute()
+            candidates_result = (
+                self.supabase.table("candidates")
+                .select("*")
+                .in_("office_id", office_ids)  # ✅ use .in_() helper
+                .execute()
+            )
 
             candidates = candidates_result.data
             print(f"👥 Found {len(candidates)} candidates for offices: {office_ids}")

@@ -92,6 +92,7 @@ export const CandidatesScreen = ({
               const response = await apiClient.getCandidates({ officeIds: displayedOffices });
               if (response.success) {
                 setCandidates(response.data.candidates);
+                console.log("📌 Raw candidates response:", response.data);
                 console.log('✅ Fetched candidates:', response.data.candidates.length);
               } else {
                 console.error('❌ Failed to fetch candidates:', response.error);
