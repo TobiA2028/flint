@@ -156,7 +156,7 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue }: OfficeMappin
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-3xl mx-auto">
-        <ProgressIndicator currentStep={5} totalSteps={7} />
+        <ProgressIndicator currentStep={5} totalSteps={10} />
         
         <div className="text-center mb-8">
           <MascotGuide 

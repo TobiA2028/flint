@@ -54,7 +54,7 @@ export const CastItScreen = ({ zipCode, onRestart }: CastItScreenProps) => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-3xl mx-auto">
-        <ProgressIndicator currentStep={8} totalSteps={8} />
+        <ProgressIndicator currentStep={10} totalSteps={10} />
         
         <div className="text-center mb-8">
           <MascotGuide 

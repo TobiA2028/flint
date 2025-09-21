@@ -62,7 +62,7 @@ export const DemographicsScreen = ({
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-2xl mx-auto">
-        <ProgressIndicator currentStep={3} totalSteps={7} />
+        <ProgressIndicator currentStep={3} totalSteps={10} />
         
         <div className="text-center mb-8">
           <MascotGuide 
