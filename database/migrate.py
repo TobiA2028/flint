@@ -99,7 +99,11 @@ def seed_data_via_client(supabase: Client):
                 "description": "Affordable housing, rent control, and homeownership programs",
                 "count": 1247,
                 "related_offices": ["city-council"],
-                "related_measures": ["measure-housing-1", "measure-housing-2"],
+                "related_measures": [
+                    "measure-housing-1",
+                    "measure-housing-2",
+                    "measure-disaster-1",
+                ],
             },
             {
                 "id": "city-budget",
@@ -108,7 +112,11 @@ def seed_data_via_client(supabase: Client):
                 "description": "City finances, taxes, and allocation of public funds",
                 "count": 982,
                 "related_offices": ["city-council"],
-                "related_measures": ["measure-budget-1"],
+                "related_measures": [
+                    "measure-budget-1",
+                    "measure-housing-1",
+                    "measure-housing-2",
+                ],
             },
             {
                 "id": "environment",
@@ -126,7 +134,7 @@ def seed_data_via_client(supabase: Client):
                 "description": "Job creation, small business support, and workforce development",
                 "count": 1567,
                 "related_offices": ["city-council"],
-                "related_measures": ["measure-econ-1"],
+                "related_measures": ["measure-budget-1"],
             },
             {
                 "id": "infrastructure",
@@ -135,7 +143,7 @@ def seed_data_via_client(supabase: Client):
                 "description": "Roads, sidewalks, utilities, and public works projects",
                 "count": 1123,
                 "related_offices": ["city-council"],
-                "related_measures": ["measure-infra-1"],
+                "related_measures": [],  # no measures in dataset
             },
             {
                 "id": "public-safety",
@@ -144,7 +152,7 @@ def seed_data_via_client(supabase: Client):
                 "description": "Crime prevention, policing, and emergency response",
                 "count": 2104,
                 "related_offices": ["city-council"],
-                "related_measures": [],
+                "related_measures": [],  # no measures in dataset
             },
             {
                 "id": "transportation",
@@ -153,7 +161,7 @@ def seed_data_via_client(supabase: Client):
                 "description": "Transit, traffic, and street improvements",
                 "count": 674,
                 "related_offices": ["city-council"],
-                "related_measures": ["measure-trans-1"],
+                "related_measures": [],  # no measures in dataset
             },
             {
                 "id": "natural-disasters",
@@ -162,7 +170,7 @@ def seed_data_via_client(supabase: Client):
                 "description": "Flood control, disaster preparedness, and recovery",
                 "count": 543,
                 "related_offices": ["city-council"],
-                "related_measures": ["measure-disaster-1"],
+                "related_measures": ["measure-disaster-1", "measure-env-1"],
             },
         ]
 
@@ -229,7 +237,6 @@ def seed_data_via_client(supabase: Client):
                 "related_issues": ["housing", "city-budget"],
             },
         ]
-
         result = (
             supabase.table("ballot_measures").insert(ballot_measures_data).execute()
         )
@@ -240,42 +247,223 @@ def seed_data_via_client(supabase: Client):
         candidates_data = [
             {
                 "id": "candidate-1",
-                "name": "Sarah Chen",
-                "party": "Democratic",
-                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
+                "name": "Angie Thibodeaux",
+                "party": "Independent",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=angie",
                 "positions": [
-                    "Supports affordable housing initiatives and rent stabilization",
-                    "Advocates for increased funding for public education",
-                    "Champions climate action and renewable energy programs",
+                    "Supports housing stability and tenant protections",
+                    "Advocates for stronger neighborhood engagement",
+                    "Experienced in housing and public administration",
                 ],
                 "office_id": "city-council",
-                "related_issues": ["housing", "education", "environment"],
+                "related_issues": ["housing", "public-safety"],
             },
             {
                 "id": "candidate-2",
-                "name": "Marcus Johnson",
-                "party": "Republican",
-                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=marcus",
+                "name": "Alejandra Salinas",
+                "party": "Democratic",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=alejandra",
                 "positions": [
-                    "Focuses on reducing regulations for small businesses",
-                    "Supports traditional law enforcement approaches",
-                    "Advocates for fiscal responsibility in city budgeting",
+                    "Supports public safety and reliable city services",
+                    "Advocates for infrastructure improvements",
+                    "Fights for better working conditions for city employees",
                 ],
                 "office_id": "city-council",
-                "related_issues": ["economy", "safety", "taxes"],
+                "related_issues": ["public-safety", "infrastructure", "city-budget"],
             },
             {
                 "id": "candidate-3",
-                "name": "Elena Rodriguez",
+                "name": "Sonia Rivera",
                 "party": "Independent",
-                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=elena",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=sonia",
                 "positions": [
-                    "Prioritizes community-driven solutions to local issues",
-                    "Supports sustainable transportation and infrastructure",
-                    "Advocates for transparent government and citizen engagement",
+                    "Prioritizes crime prevention and safer neighborhoods",
+                    "Supports housing infrastructure investment",
+                    "Advocates for expanded economic opportunity",
                 ],
-                "office_id": "mayor",
-                "related_issues": ["transportation", "infrastructure", "rights"],
+                "office_id": "city-council",
+                "related_issues": ["public-safety", "housing", "economy"],
+            },
+            {
+                "id": "candidate-4",
+                "name": "Jordan Thomas",
+                "party": "Democratic",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=jordan",
+                "positions": [
+                    "Focuses on infrastructure improvements",
+                    "Supports affordable housing and land use reform",
+                    "Advocates for climate resilience and disaster relief",
+                ],
+                "office_id": "city-council",
+                "related_issues": [
+                    "infrastructure",
+                    "housing",
+                    "environment",
+                    "natural-disasters",
+                ],
+            },
+            {
+                "id": "candidate-5",
+                "name": "Ethan Hale",
+                "party": "Progressive",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=ethan",
+                "positions": [
+                    "Supports housing and tenant protections",
+                    "Advocates for expanded social services and homelessness solutions",
+                    "Champions environmental protection",
+                ],
+                "office_id": "city-council",
+                "related_issues": ["housing", "environment", "public-safety"],
+            },
+            {
+                "id": "candidate-6",
+                "name": "Cris Wright",
+                "party": "Independent",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=cris",
+                "positions": [
+                    "Supports small businesses and Houston’s cultural heritage",
+                    "Advocates for affordable housing",
+                    "Focuses on safe, community-centered infrastructure",
+                ],
+                "office_id": "city-council",
+                "related_issues": ["economy", "housing", "infrastructure"],
+            },
+            {
+                "id": "candidate-7",
+                "name": "Al Loyd",
+                "party": "Independent",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=al",
+                "positions": [
+                    "Prioritizes infrastructure improvements",
+                    "Supports public safety initiatives",
+                    "Advocates for small business support",
+                ],
+                "office_id": "city-council",
+                "related_issues": ["infrastructure", "public-safety", "economy"],
+            },
+            {
+                "id": "candidate-8",
+                "name": "Martina Lemond Dixon",
+                "party": "Republican",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=martina",
+                "positions": [
+                    "Supports law enforcement and public safety",
+                    "Advocates for fiscal responsibility",
+                    "Focuses on infrastructure and flood resilience",
+                ],
+                "office_id": "city-council",
+                "related_issues": [
+                    "public-safety",
+                    "infrastructure",
+                    "city-budget",
+                    "natural-disasters",
+                ],
+            },
+            {
+                "id": "candidate-9",
+                "name": "Miguel Herrera",
+                "party": "Independent",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=miguel",
+                "positions": [
+                    "Advocates for affordability in city living",
+                    "Opposes wasteful city spending",
+                    "Supports safer East Houston neighborhoods",
+                ],
+                "office_id": "city-council",
+                "related_issues": ["economy", "public-safety", "housing"],
+            },
+            {
+                "id": "candidate-10",
+                "name": "Kristal Mtaza-Lyons",
+                "party": "Independent",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=kristal",
+                "positions": [
+                    "Supports public safety and community trust",
+                    "Advocates for affordable housing and homelessness solutions",
+                    "Focuses on workforce development and flood readiness",
+                ],
+                "office_id": "city-council",
+                "related_issues": [
+                    "public-safety",
+                    "housing",
+                    "economy",
+                    "natural-disasters",
+                ],
+            },
+            {
+                "id": "candidate-11",
+                "name": "Sheraz Mohammad Siddiqui",
+                "party": "Independent",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=sheraz",
+                "positions": [
+                    "Supports law enforcement and lower taxes",
+                    "Advocates for flood mitigation",
+                    "Promotes business-friendly policies and trade",
+                ],
+                "office_id": "city-council",
+                "related_issues": [
+                    "public-safety",
+                    "economy",
+                    "natural-disasters",
+                    "city-budget",
+                ],
+            },
+            {
+                "id": "candidate-12",
+                "name": "Kathy L. Tatum",
+                "party": "Independent",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=kathy",
+                "positions": [
+                    "Advocates for government transparency",
+                    "Supports cutting city payments to outside nonprofits",
+                    "Focuses on expanding sidewalk networks",
+                ],
+                "office_id": "city-council",
+                "related_issues": ["city-budget", "infrastructure"],
+            },
+            {
+                "id": "candidate-13",
+                "name": "Adrian Thomas Rogers",
+                "party": "Independent",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=adrian",
+                "positions": [
+                    "Advocates for crime prevention technology",
+                    "Supports homelessness solutions",
+                    "Focuses on transportation and street safety",
+                ],
+                "office_id": "city-council",
+                "related_issues": ["public-safety", "housing", "transportation"],
+            },
+            {
+                "id": "candidate-14",
+                "name": "Brad Batteau",
+                "party": "Independent",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=brad",
+                "positions": [
+                    "Supports flood mitigation",
+                    "Advocates for improving city revenue",
+                ],
+                "office_id": "city-council",
+                "related_issues": ["natural-disasters", "city-budget"],
+            },
+            {
+                "id": "candidate-15",
+                "name": "Dwight Boykins",
+                "party": "Democratic",
+                "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=dwight",
+                "positions": [
+                    "Advocates for flood control in neighborhoods",
+                    "Supports assistance for seniors",
+                    "Encourages grocery store development",
+                    "Focuses on addressing city budget deficit",
+                ],
+                "office_id": "city-council",
+                "related_issues": [
+                    "natural-disasters",
+                    "housing",
+                    "city-budget",
+                    "economy",
+                ],
             },
         ]
 
