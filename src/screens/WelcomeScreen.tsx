@@ -47,7 +47,7 @@ export const WelcomeScreen = ({ onContinue, onDebug }: WelcomeScreenProps) => {
             Let's Spark It
           </CTAButton>
 
-          {onDebug && (
+          {false && onDebug && (
             <CTAButton
               onClick={onDebug}
               variant="secondary"

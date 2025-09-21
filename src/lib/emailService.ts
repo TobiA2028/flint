@@ -237,10 +237,8 @@ export function generateVotingGuideEmail(data: EmailTemplateData): EmailContent 
             text-align: center;
         }
         .resource-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
+            text-align: center;
+            margin: 0 auto;
         }
         .cta-button {
             display: inline-block;
@@ -329,12 +327,12 @@ export function generateVotingGuideEmail(data: EmailTemplateData): EmailContent 
             <div class="section-title">
                 <span>📖</span> Voting Resources
             </div>
-            <div class="voting-resources">
+            <div class="voting-resources" style="text-align: center;">
                 <p style="margin-bottom: 16px; color: #64748b; font-size: 14px;">
                     Need help navigating the voting process? <br> We've got you covered.
                 </p>
-                <div class="resource-buttons">
-                    <a href="https://drive.google.com/file/d/1veBQRpP-Cym30GPnEkbca73dA4pkzsbu/view?usp=sharing" class="cta-button">
+                <div class="resource-buttons" style="text-align: center; margin: 0 auto;">
+                    <a href="https://drive.google.com/file/d/1veBQRpP-Cym30GPnEkbca73dA4pkzsbu/view?usp=sharing" class="cta-button" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 8px 4px;">
                         📋 Flint's Official Voting Guide
                     </a>
                 </div>
