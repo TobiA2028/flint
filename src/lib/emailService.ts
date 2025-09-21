@@ -127,46 +127,88 @@ export function generateVotingGuideEmail(data: EmailTemplateData): EmailContent 
             border-radius: 8px;
             margin-bottom: 24px;
         }
-        .candidate-card, .measure-card {
+        .sample-ballot-card {
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 12px;
+            border-radius: 12px;
+            background: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        .candidate-name {
+        .ballot-header {
+            background: #f8fafc;
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ballot-title {
+            font-size: 20px;
             font-weight: 600;
-            font-size: 18px;
             color: #1e293b;
         }
-        .candidate-office {
+        .ballot-location {
             color: #64748b;
             font-size: 14px;
-            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
-        .candidate-party {
-            display: inline-block;
-            background: #dbeafe;
-            color: #1e40af;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
+        .ballot-section {
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
         }
-        .measure-title {
+        .ballot-section:last-child {
+            border-bottom: none;
+        }
+        .ballot-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+        .ballot-items {
+            space-y: 12px;
+        }
+        .ballot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .ballot-item-main {
+            flex: 1;
+        }
+        .candidate-name, .measure-title {
             font-weight: 600;
             font-size: 16px;
             color: #1e293b;
             margin-bottom: 4px;
         }
+        .candidate-office {
+            color: #64748b;
+            font-size: 14px;
+        }
+        .candidate-party {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
         .measure-category {
             display: inline-block;
             background: #dcfce7;
             color: #166534;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: 500;
-            margin-bottom: 8px;
         }
         .voting-info {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
@@ -191,6 +233,15 @@ export function generateVotingGuideEmail(data: EmailTemplateData): EmailContent 
             color: #64748b;
             font-size: 14px;
         }
+        .voting-resources {
+            text-align: center;
+        }
+        .resource-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
         .cta-button {
             display: inline-block;
             background: #3b82f6;
@@ -199,7 +250,17 @@ export function generateVotingGuideEmail(data: EmailTemplateData): EmailContent 
             border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
-            margin: 16px 8px;
+            margin: 8px 4px;
+            transition: background-color 0.2s ease;
+        }
+        .cta-button:hover {
+            background: #2563eb;
+        }
+        .secondary-button {
+            background: #6b7280;
+        }
+        .secondary-button:hover {
+            background: #4b5563;
         }
     </style>
 </head>
@@ -211,45 +272,74 @@ export function generateVotingGuideEmail(data: EmailTemplateData): EmailContent 
         </div>
 
         <div class="location-info">
-            <strong>📍 Your Voting Information</strong><br>
-            ZIP Code: ${userProfile.zipCode}<br>
-            Selected Issues: ${userProfile.selectedIssues.join(', ')}
+            <strong>📍 Your Primary Issues:</strong><br>
+           ${userProfile.selectedIssues.join(', ')}
         </div>
 
-        ${starredCandidates.length > 0 ? `
+        ${(starredCandidates.length > 0 || starredMeasures.length > 0) ? `
         <div class="section">
             <div class="section-title">
-                <span>👥</span> Your Selected Candidates
+                <span>📋</span> Your Sample Ballot
             </div>
-            ${starredCandidates.map(candidate => `
-                <div class="candidate-card">
-                    <div class="candidate-name">${candidate.name}</div>
-                    <div class="candidate-office">${candidate.office_id || 'Office'}</div>
-                    <span class="candidate-party">${candidate.party}</span>
-                    <div style="margin-top: 8px; font-size: 14px; color: #64748b;">
-                        ${candidate.positions.slice(0, 2).join(' • ')}
+            <div class="sample-ballot-card">
+                <div class="ballot-header">
+                    <div class="ballot-title">Your Selections</div>
+                    <div class="ballot-location">
+                        <span>📍 ZIP: ${userProfile.zipCode}</span>
                     </div>
                 </div>
-            `).join('')}
+
+                ${starredCandidates.length > 0 ? `
+                <div class="ballot-section">
+                    <h3 class="ballot-section-title">Candidates</h3>
+                    <div class="ballot-items">
+                        ${starredCandidates.map(candidate => `
+                            <div class="ballot-item">
+                                <div class="ballot-item-main">
+                                    <div class="candidate-name">${candidate.name}</div>
+                                    <div class="candidate-office">${candidate.office_id || 'Office'}</div>
+                                </div>
+                                <span class="candidate-party">${candidate.party}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                ${starredMeasures.length > 0 ? `
+                <div class="ballot-section">
+                    <h3 class="ballot-section-title">Ballot Measures</h3>
+                    <div class="ballot-items">
+                        ${starredMeasures.map(measure => `
+                            <div class="ballot-item">
+                                <div class="ballot-item-main">
+                                    <div class="measure-title">${measure.title}</div>
+                                </div>
+                                <span class="measure-category">${measure.category}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            </div>
         </div>
         ` : ''}
 
-        ${starredMeasures.length > 0 ? `
         <div class="section">
             <div class="section-title">
-                <span>🗳️</span> Your Selected Ballot Measures
+                <span>📖</span> Voting Resources
             </div>
-            ${starredMeasures.map(measure => `
-                <div class="measure-card">
-                    <div class="measure-title">${measure.title}</div>
-                    <span class="measure-category">${measure.category}</span>
-                    <div style="margin-top: 8px; font-size: 14px; color: #64748b;">
-                        ${measure.description}
-                    </div>
+            <div class="voting-resources">
+                <p style="margin-bottom: 16px; color: #64748b; font-size: 14px;">
+                    Need help navigating the voting process? <br> We've got you covered.
+                </p>
+                <div class="resource-buttons">
+                    <a href="https://drive.google.com/file/d/1veBQRpP-Cym30GPnEkbca73dA4pkzsbu/view?usp=sharing" class="cta-button">
+                        📋 Flint's Official Voting Guide
+                    </a>
                 </div>
-            `).join('')}
+            </div>
         </div>
-        ` : ''}
 
         <div class="voting-info">
             <div class="voting-date">📅 November 5, 2024</div>
@@ -273,17 +363,24 @@ Your Personalized Voting Guide
 Location: ZIP ${userProfile.zipCode}
 Selected Issues: ${userProfile.selectedIssues.join(', ')}
 
+SAMPLE BALLOT - YOUR SELECTIONS:
+${starredCandidates.length > 0 ? `
 CANDIDATES:
 ${starredCandidates.map(c => `- ${c.name} (${c.party}) for ${c.office_id}`).join('\n')}
-
+` : ''}
+${starredMeasures.length > 0 ? `
 BALLOT MEASURES:
 ${starredMeasures.map(m => `- ${m.title} (${m.category})`).join('\n')}
+` : ''}
+
+VOTING RESOURCES:
+- Official Voting Guide: https://www.vote.org/voter-guide/
+- Sample Ballot Tool: https://www.vote.org/ballot/
+- Find Your Polling Place: https://www.vote.org/polling-place-locator/
 
 IMPORTANT DATES:
 Election Day: November 5, 2024
 Polls open: 7:00 AM - 8:00 PM
-
-Find your polling place: https://www.vote.org/polling-place-locator/
 
 Generated by Flint for ${userEmail}
   `;
