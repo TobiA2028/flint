@@ -528,6 +528,33 @@ class IssueDataStore:
     # RELATIONSHIP QUERY METHODS - For efficient data retrieval by frontend
     # ============================================================================
 
+    def get_all_offices(self) -> List[Dict[str, Any]]:
+        """
+        Get all office objects.
+
+        Returns:
+            List[Dict[str, Any]]: All office objects
+        """
+        return list(self.offices.values())
+
+    def get_all_ballot_measures(self) -> List[Dict[str, Any]]:
+        """
+        Get all ballot measure objects.
+
+        Returns:
+            List[Dict[str, Any]]: All ballot measure objects
+        """
+        return list(self.ballot_measures.values())
+
+    def get_all_candidates(self) -> List[Dict[str, Any]]:
+        """
+        Get all candidate objects.
+
+        Returns:
+            List[Dict[str, Any]]: All candidate objects
+        """
+        return list(self.candidates.values())
+
     def get_offices_by_issues(self, issue_ids: List[str]) -> List[Dict[str, Any]]:
         """
         Get all offices that handle any of the specified issues.

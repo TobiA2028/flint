@@ -19,7 +19,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+# Specify the path to the backend .env file explicitly
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
 
 # Import your data store modules
 from data_store import IssueDataStore, create_data_store  # Legacy support
@@ -65,7 +66,7 @@ def create_app():
     # Configure CORS with proper settings
     # This allows your React app to communicate with the Flask API
     CORS(app,
-         origins=["http://localhost:8080", "http://127.0.0.1:8080"],
+         origins=["http://localhost:8080", "http://127.0.0.1:8080", "http://localhost:8081", "http://127.0.0.1:8081"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
          allow_headers=["Content-Type", "Authorization"])
 
@@ -359,7 +360,7 @@ def create_app():
             filtered_by = selected_issues
         else:
             # Return all offices if no filter specified
-            offices = list(app.issue_store.offices.values())
+            offices = app.issue_store.get_all_offices()
             filtered_by = None
 
         return jsonify({
@@ -434,7 +435,7 @@ def create_app():
             filtered_by = selected_issues
         else:
             # Return all ballot measures if no filter specified
-            ballot_measures = list(app.issue_store.ballot_measures.values())
+            ballot_measures = app.issue_store.get_all_ballot_measures()
             filtered_by = None
 
         return jsonify({
@@ -514,7 +515,7 @@ def create_app():
             filtered_by = selected_issues
         else:
             # Return all candidates if no filter specified
-            candidates = list(app.issue_store.candidates.values())
+            candidates = app.issue_store.get_all_candidates()
             filtered_by = None
 
         return jsonify({
@@ -589,9 +590,9 @@ def create_app():
             filtered_by = selected_issues
         else:
             # Return all data if no filter specified
-            offices = list(app.issue_store.offices.values())
-            ballot_measures = list(app.issue_store.ballot_measures.values())
-            candidates = list(app.issue_store.candidates.values())
+            offices = app.issue_store.get_all_offices()
+            ballot_measures = app.issue_store.get_all_ballot_measures()
+            candidates = app.issue_store.get_all_candidates()
             filtered_by = None
 
         total_users = app.issue_store.get_total_users()

@@ -225,8 +225,62 @@ class SupabaseDataStore:
             return 0
 
     # ============================================================================
-    # CIVIC ENTITY QUERY METHODS - For filtering by issue relationships
+    # CIVIC ENTITY QUERY METHODS - For filtering by issue relationships and getting all entities
     # ============================================================================
+
+    def get_all_offices(self) -> List[Dict[str, Any]]:
+        """
+        Get all office objects from the database.
+
+        Returns:
+            List[Dict[str, Any]]: All office objects from database
+        """
+        try:
+            result = self.supabase.table('offices').select('*').execute()
+            offices = result.data
+
+            print(f"🏛️  Retrieved {len(offices)} offices from database")
+            return offices
+
+        except Exception as e:
+            print(f"❌ Error retrieving all offices: {e}")
+            return []
+
+    def get_all_ballot_measures(self) -> List[Dict[str, Any]]:
+        """
+        Get all ballot measure objects from the database.
+
+        Returns:
+            List[Dict[str, Any]]: All ballot measure objects from database
+        """
+        try:
+            result = self.supabase.table('ballot_measures').select('*').execute()
+            ballot_measures = result.data
+
+            print(f"🗳️  Retrieved {len(ballot_measures)} ballot measures from database")
+            return ballot_measures
+
+        except Exception as e:
+            print(f"❌ Error retrieving all ballot measures: {e}")
+            return []
+
+    def get_all_candidates(self) -> List[Dict[str, Any]]:
+        """
+        Get all candidate objects from the database.
+
+        Returns:
+            List[Dict[str, Any]]: All candidate objects from database
+        """
+        try:
+            result = self.supabase.table('candidates').select('*').execute()
+            candidates = result.data
+
+            print(f"👥 Retrieved {len(candidates)} candidates from database")
+            return candidates
+
+        except Exception as e:
+            print(f"❌ Error retrieving all candidates: {e}")
+            return []
 
     def get_offices_by_issues(self, issue_ids: List[str]) -> List[Dict[str, Any]]:
         """
@@ -244,8 +298,9 @@ class SupabaseDataStore:
 
             # Use PostgreSQL array overlap operator to find offices
             # that have any of the specified issues in their related_issues array
+            # Format: related_issues && ARRAY['issue1','issue2']
             result = self.supabase.table('offices').select('*').filter(
-                'related_issues', 'ov', issue_ids
+                'related_issues', 'ov', f"{{{','.join(issue_ids)}}}"
             ).execute()
 
             print(f"🏛️  Found {len(result.data)} offices for issues: {issue_ids}")
@@ -270,8 +325,9 @@ class SupabaseDataStore:
                 return []
 
             # Use PostgreSQL array overlap operator
+            # Format: related_issues && ARRAY['issue1','issue2']
             result = self.supabase.table('ballot_measures').select('*').filter(
-                'related_issues', 'ov', issue_ids
+                'related_issues', 'ov', f"{{{','.join(issue_ids)}}}"
             ).execute()
 
             print(f"🗳️  Found {len(result.data)} ballot measures for issues: {issue_ids}")
@@ -296,8 +352,9 @@ class SupabaseDataStore:
                 return []
 
             # Get candidates with direct issue relationships
+            # Format: related_issues && ARRAY['issue1','issue2']
             direct_candidates = self.supabase.table('candidates').select('*').filter(
-                'related_issues', 'ov', issue_ids
+                'related_issues', 'ov', f"{{{','.join(issue_ids)}}}"
             ).execute()
 
             # Get candidates through their office relationships
