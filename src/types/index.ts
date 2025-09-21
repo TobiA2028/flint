@@ -160,6 +160,10 @@ export interface AppState {
   issues: Issue[];
   issuesLoading: boolean;
   issuesError: string | null;
+  // Email and readiness response tracking
+  userEmail: string;
+  emailOptIn: boolean;
+  readinessResponse: 'yes' | 'no' | 'still-thinking' | null;
 }
 
 // ============================================================================

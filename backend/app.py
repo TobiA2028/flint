@@ -586,6 +586,254 @@ def create_app():
         })
 
     # ========================================================================
+    # USER COMPLETION AND EMAIL ENDPOINTS
+    # ========================================================================
+
+    @app.route('/api/user-completion', methods=['POST'])
+    def store_user_completion():
+        """
+        Store complete user journey data including readiness response and selections.
+
+        This endpoint captures the full user experience when they complete the
+        ReadyToCastScreen, regardless of their response (yes/no/still-thinking).
+
+        Expected JSON payload:
+        {
+            "user_profile": {
+                "selectedIssues": ["housing", "education"],
+                "ageGroup": "25-34",
+                "communityRole": ["parent"],
+                "zipCode": "90210"
+            },
+            "starred_candidates": ["candidate-1", "candidate-2"],
+            "starred_measures": ["measure-edu-1"],
+            "readiness_response": "yes" | "no" | "still-thinking",
+            "session_id": "unique-session-id"
+        }
+
+        Returns:
+            JSON: Success/error response with stored data confirmation
+        """
+        log_request('/api/user-completion', 'POST')
+
+        try:
+            # Get request data
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    "success": False,
+                    "error": "No JSON data provided"
+                }), 400
+
+            # Add completion timestamp
+            completion_data = {
+                **data,
+                "completed_at": datetime.now().isoformat()
+            }
+
+            # Store the completion data
+            success = app.issue_store.store_user_completion(completion_data)
+
+            if success:
+                return jsonify({
+                    "success": True,
+                    "message": "User completion data stored successfully",
+                    "readiness_response": data.get("readiness_response"),
+                    "timestamp": completion_data["completed_at"]
+                })
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": "Failed to store user completion data"
+                }), 500
+
+        except Exception as e:
+            print(f"❌ Error in /api/user-completion: {e}")
+            return jsonify({
+                "success": False,
+                "error": f"Server error: {str(e)}"
+            }), 500
+
+    @app.route('/api/email-signup', methods=['POST'])
+    def store_email_signup():
+        """
+        Store email signup data from various screens (ThankYou, Cast).
+
+        This endpoint handles email signups from both the ThankYouScreen and
+        CastItScreen, tracking the source and user consent preferences.
+
+        Expected JSON payload:
+        {
+            "email": "user@example.com",
+            "source": "thankyou" | "cast",
+            "wants_updates": true | false,
+            "user_profile": {...},      // Optional: user demographic data
+            "ballot_data": {...},       // Optional: for cast screen signups
+            "session_id": "unique-session-id"
+        }
+
+        Returns:
+            JSON: Success/error response with email confirmation
+        """
+        log_request('/api/email-signup', 'POST')
+
+        try:
+            # Get request data
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    "success": False,
+                    "error": "No JSON data provided"
+                }), 400
+
+            # Add signup timestamp
+            email_data = {
+                **data,
+                "timestamp": datetime.now().isoformat()
+            }
+
+            # Store the email signup
+            success = app.issue_store.store_email_signup(email_data)
+
+            if success:
+                return jsonify({
+                    "success": True,
+                    "message": "Email signup stored successfully",
+                    "email": data.get("email"),
+                    "source": data.get("source"),
+                    "timestamp": email_data["timestamp"]
+                })
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": "Failed to store email signup"
+                }), 500
+
+        except Exception as e:
+            print(f"❌ Error in /api/email-signup: {e}")
+            return jsonify({
+                "success": False,
+                "error": f"Server error: {str(e)}"
+            }), 500
+
+    @app.route('/api/readiness-stats', methods=['GET'])
+    def get_readiness_stats():
+        """
+        Get statistics on user readiness responses for analytics.
+
+        This endpoint provides insights into how users respond to the
+        "Are you ready to cast your vote?" question.
+
+        Returns:
+            JSON: Count of each readiness response type
+
+        Example response:
+        {
+            "stats": {
+                "yes": 45,
+                "no": 12,
+                "still-thinking": 8
+            },
+            "total_responses": 65,
+            "timestamp": "2024-01-15T10:30:00"
+        }
+        """
+        log_request('/api/readiness-stats', 'GET')
+
+        try:
+            # Get readiness statistics
+            stats = app.issue_store.get_readiness_stats()
+            total_responses = sum(stats.values())
+
+            return jsonify({
+                "success": True,
+                "stats": stats,
+                "total_responses": total_responses,
+                "timestamp": datetime.now().isoformat()
+            })
+
+        except Exception as e:
+            print(f"❌ Error in /api/readiness-stats: {e}")
+            return jsonify({
+                "success": False,
+                "error": f"Server error: {str(e)}"
+            }), 500
+
+    # ========================================================================
+    # TESTING AND DEBUG ENDPOINTS
+    # ========================================================================
+
+    @app.route('/api/debug/emails', methods=['GET'])
+    def get_stored_emails():
+        """
+        Debug endpoint to view all stored email signups.
+
+        Query Parameters:
+            limit (optional): Maximum number of emails to return
+            source (optional): Filter by source ('thankyou', 'cast')
+
+        Returns:
+            JSON: List of stored email signups for testing
+        """
+        log_request('/api/debug/emails', 'GET')
+
+        try:
+            # Get query parameters
+            limit = request.args.get('limit', type=int)
+            source = request.args.get('source')
+
+            # Get stored email signups
+            emails = app.issue_store.get_email_signups(limit=limit, source=source)
+
+            return jsonify({
+                "success": True,
+                "emails": emails,
+                "total_count": len(emails),
+                "timestamp": datetime.now().isoformat()
+            })
+
+        except Exception as e:
+            print(f"❌ Error in /api/debug/emails: {e}")
+            return jsonify({
+                "success": False,
+                "error": f"Server error: {str(e)}"
+            }), 500
+
+    @app.route('/api/debug/completions', methods=['GET'])
+    def get_stored_completions():
+        """
+        Debug endpoint to view all stored user completions.
+
+        Query Parameters:
+            limit (optional): Maximum number of completions to return
+
+        Returns:
+            JSON: List of stored user completion data for testing
+        """
+        log_request('/api/debug/completions', 'GET')
+
+        try:
+            # Get query parameters
+            limit = request.args.get('limit', type=int)
+
+            # Get stored user completions
+            completions = app.issue_store.get_user_completions(limit=limit)
+
+            return jsonify({
+                "success": True,
+                "completions": completions,
+                "total_count": len(completions),
+                "timestamp": datetime.now().isoformat()
+            })
+
+        except Exception as e:
+            print(f"❌ Error in /api/debug/completions: {e}")
+            return jsonify({
+                "success": False,
+                "error": f"Server error: {str(e)}"
+            }), 500
+
+    # ========================================================================
     # ERROR HANDLERS
     # ========================================================================
 

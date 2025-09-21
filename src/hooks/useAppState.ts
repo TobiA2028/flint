@@ -19,7 +19,11 @@ const initialState: AppState = {
   // New issue management state
   issues: [],
   issuesLoading: false,
-  issuesError: null
+  issuesError: null,
+  // Email and readiness response tracking
+  userEmail: '',
+  emailOptIn: false,
+  readinessResponse: null
 };
 
 export const useAppState = () => {
@@ -182,6 +186,18 @@ export const useAppState = () => {
     localStorage.removeItem(STORAGE_KEY);
   };
 
+  const setUserEmail = (email: string) => {
+    setState(prev => ({ ...prev, userEmail: email }));
+  };
+
+  const setEmailOptIn = (optIn: boolean) => {
+    setState(prev => ({ ...prev, emailOptIn: optIn }));
+  };
+
+  const setReadinessResponse = (response: 'yes' | 'no' | 'still-thinking' | null) => {
+    setState(prev => ({ ...prev, readinessResponse: response }));
+  };
+
   return {
     state,
     updateUserProfile,
@@ -194,6 +210,10 @@ export const useAppState = () => {
     // New issue management functions
     loadIssues,
     refreshIssues,
-    ensureIssuesLoaded
+    ensureIssuesLoaded,
+    // Email and readiness response functions
+    setUserEmail,
+    setEmailOptIn,
+    setReadinessResponse
   };
 };

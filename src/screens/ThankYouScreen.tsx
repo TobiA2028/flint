@@ -6,12 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Share, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { apiClient } from '@/lib/api';
 
 interface ThankYouScreenProps {
   onRestart: () => void;
+  userProfile?: any; // Optional user profile data to include with signup
 }
 
-export const ThankYouScreen = ({ onRestart }: ThankYouScreenProps) => {
+export const ThankYouScreen = ({ onRestart, userProfile }: ThankYouScreenProps) => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,15 +36,32 @@ export const ThankYouScreen = ({ onRestart }: ThankYouScreenProps) => {
       toast.error('Please enter a valid email address');
       return;
     }
-    
+
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success('Thank you! We\'ll keep you updated on civic engagement opportunities.');
+
+    try {
+      // Store email signup via API
+      const response = await apiClient.storeEmailSignup({
+        email,
+        source: 'thankyou',
+        wants_updates: true, // ThankYou screen implies they want updates
+        user_profile: userProfile,
+        session_id: Date.now().toString() // Simple session ID
+      });
+
+      if (response.success) {
+        toast.success('Thank you! We\'ll keep you updated on civic engagement opportunities.');
+        setEmail('');
+      } else {
+        toast.error('There was an issue saving your email. Please try again.');
+        console.error('Email signup failed:', response.error);
+      }
+    } catch (error) {
+      toast.error('Unable to save email. Please check your connection.');
+      console.error('Email signup error:', error);
+    }
+
     setIsSubmitting(false);
-    setEmail('');
   };
 
   return (

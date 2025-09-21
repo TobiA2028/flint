@@ -8,13 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Download, Mail, Share, RefreshCw, Calendar, MapPin, Vote, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { apiClient } from '@/lib/api';
 
 interface CastItScreenProps {
   zipCode: string;
   onRestart: () => void;
+  userProfile?: any; // User profile data
+  ballotData?: any; // Ballot selections for email
 }
 
-export const CastItScreen = ({ zipCode, onRestart }: CastItScreenProps) => {
+export const CastItScreen = ({ zipCode, onRestart, userProfile, ballotData }: CastItScreenProps) => {
   const [email, setEmail] = useState('');
   const [wantsUpdates, setWantsUpdates] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,13 +26,32 @@ export const CastItScreen = ({ zipCode, onRestart }: CastItScreenProps) => {
 
   const handleEmailSubmit = async () => {
     if (!canSubmitEmail) return;
-    
+
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast.success('Results saved and sent to your email!');
+
+    try {
+      // Store email signup via API with ballot data
+      const response = await apiClient.storeEmailSignup({
+        email,
+        source: 'cast',
+        wants_updates: wantsUpdates,
+        user_profile: userProfile,
+        ballot_data: ballotData,
+        session_id: Date.now().toString() // Simple session ID
+      });
+
+      if (response.success) {
+        toast.success('Results saved and sent to your email!');
+        // TODO: Trigger actual email sending with ballot data
+      } else {
+        toast.error('There was an issue saving your email. Please try again.');
+        console.error('Email signup failed:', response.error);
+      }
+    } catch (error) {
+      toast.error('Unable to save email. Please check your connection.');
+      console.error('Email signup error:', error);
+    }
+
     setIsSubmitting(false);
   };
 

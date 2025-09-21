@@ -96,6 +96,13 @@ class IssueDataStore:
         self.user_sessions = set()  # Track user sessions to prevent duplicate counting
 
         # ============================================================================
+        # USER COMPLETION DATA - For storing complete user journeys and email signups
+        # ============================================================================
+
+        self.user_completions = []  # List of complete user journey data
+        self.email_signups = []     # List of email signups from various screens
+
+        # ============================================================================
         # DATA INITIALIZATION - Load demo data with complete relationships
         # ============================================================================
 
@@ -813,6 +820,10 @@ class IssueDataStore:
         self.user_sessions.clear()   # User session tracking for duplicate prevention
         self.total_users = 0         # Reset total user count
 
+        # Clear user completion and email data
+        self.user_completions.clear()  # Complete user journey data
+        self.email_signups.clear()     # Email signup data
+
         # ============================================================================
         # RELOAD COMPLETE DEMO DATASET
         # ============================================================================
@@ -897,6 +908,178 @@ class IssueDataStore:
         # TODO: Implement this method (optional)
         # Sort issues by frequency and return top N
         pass
+
+    # ============================================================================
+    # USER COMPLETION AND EMAIL TRACKING METHODS
+    # ============================================================================
+
+    def store_user_completion(self, completion_data: Dict[str, Any]) -> bool:
+        """
+        Store complete user journey data including readiness response and selections.
+
+        This method captures the full user experience including:
+        - User profile (demographics, selected issues, zip code)
+        - User selections (starred candidates and ballot measures)
+        - Readiness response ('yes', 'no', 'still-thinking')
+        - Completion timestamp and session info
+
+        Args:
+            completion_data (Dict[str, Any]): Complete user journey data with structure:
+                {
+                    "user_profile": {
+                        "selectedIssues": ["housing", "education"],
+                        "ageGroup": "25-34",
+                        "communityRole": ["parent"],
+                        "zipCode": "90210"
+                    },
+                    "starred_candidates": ["candidate-1", "candidate-2"],
+                    "starred_measures": ["measure-edu-1"],
+                    "readiness_response": "yes" | "no" | "still-thinking",
+                    "completed_at": "2024-01-15T10:30:00",
+                    "session_id": "unique-session-id"
+                }
+
+        Returns:
+            bool: True if successfully stored, False otherwise
+        """
+        try:
+            # Validate required fields
+            required_fields = ["user_profile", "readiness_response", "completed_at"]
+            for field in required_fields:
+                if field not in completion_data:
+                    print(f"❌ Missing required field: {field}")
+                    return False
+
+            # Add internal tracking fields
+            completion_entry = {
+                **completion_data,
+                "id": len(self.user_completions) + 1,
+                "stored_at": datetime.now().isoformat()
+            }
+
+            # Store the completion data
+            self.user_completions.append(completion_entry)
+
+            print(f"✅ Stored user completion data for session: {completion_data.get('session_id', 'unknown')}")
+            print(f"   📊 Readiness response: {completion_data['readiness_response']}")
+            print(f"   🎯 Selected issues: {completion_data['user_profile'].get('selectedIssues', [])}")
+            print(f"   ⭐ Starred candidates: {len(completion_data.get('starred_candidates', []))}")
+            print(f"   🗳️  Starred measures: {len(completion_data.get('starred_measures', []))}")
+
+            return True
+
+        except Exception as e:
+            print(f"❌ Error storing user completion data: {e}")
+            return False
+
+    def store_email_signup(self, email_data: Dict[str, Any]) -> bool:
+        """
+        Store email signup data from various screens (ThankYou, Cast).
+
+        This method captures email signups with context about where they came from
+        and what the user consented to receive.
+
+        Args:
+            email_data (Dict[str, Any]): Email signup data with structure:
+                {
+                    "email": "user@example.com",
+                    "source": "thankyou" | "cast",
+                    "wants_updates": True | False,
+                    "user_profile": {...},  # Optional: user demographic data
+                    "ballot_data": {...},   # Optional: for cast screen signups
+                    "timestamp": "2024-01-15T10:30:00",
+                    "session_id": "unique-session-id"
+                }
+
+        Returns:
+            bool: True if successfully stored, False otherwise
+        """
+        try:
+            # Validate required fields
+            required_fields = ["email", "source", "timestamp"]
+            for field in required_fields:
+                if field not in email_data:
+                    print(f"❌ Missing required field: {field}")
+                    return False
+
+            # Validate email format (basic check)
+            email = email_data["email"]
+            if "@" not in email or len(email) < 5:
+                print(f"❌ Invalid email format: {email}")
+                return False
+
+            # Add internal tracking fields
+            email_entry = {
+                **email_data,
+                "id": len(self.email_signups) + 1,
+                "stored_at": datetime.now().isoformat()
+            }
+
+            # Store the email signup
+            self.email_signups.append(email_entry)
+
+            print(f"✅ Stored email signup: {email}")
+            print(f"   📍 Source: {email_data['source']}")
+            print(f"   📧 Wants updates: {email_data.get('wants_updates', 'N/A')}")
+            print(f"   🆔 Session: {email_data.get('session_id', 'unknown')}")
+
+            return True
+
+        except Exception as e:
+            print(f"❌ Error storing email signup: {e}")
+            return False
+
+    def get_user_completions(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """
+        Get stored user completion data.
+
+        Args:
+            limit (Optional[int]): Maximum number of entries to return
+
+        Returns:
+            List[Dict[str, Any]]: User completion data entries
+        """
+        if limit is None:
+            return self.user_completions.copy()
+        return self.user_completions[-limit:] if limit > 0 else []
+
+    def get_email_signups(self, limit: Optional[int] = None, source: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Get stored email signup data.
+
+        Args:
+            limit (Optional[int]): Maximum number of entries to return
+            source (Optional[str]): Filter by source ('thankyou', 'cast')
+
+        Returns:
+            List[Dict[str, Any]]: Email signup data entries
+        """
+        signups = self.email_signups.copy()
+
+        # Filter by source if specified
+        if source:
+            signups = [signup for signup in signups if signup.get("source") == source]
+
+        # Apply limit
+        if limit is None:
+            return signups
+        return signups[-limit:] if limit > 0 else []
+
+    def get_readiness_stats(self) -> Dict[str, int]:
+        """
+        Get statistics on user readiness responses.
+
+        Returns:
+            Dict[str, int]: Count of each readiness response type
+        """
+        stats = {"yes": 0, "no": 0, "still-thinking": 0}
+
+        for completion in self.user_completions:
+            response = completion.get("readiness_response")
+            if response in stats:
+                stats[response] += 1
+
+        return stats
 
 
 # ============================================================================

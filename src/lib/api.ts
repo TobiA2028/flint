@@ -670,6 +670,127 @@ export class ApiClient {
   }
 
   /**
+   * Store user completion data including readiness response
+   *
+   * Sends complete user journey data to the backend when user completes
+   * the ReadyToCastScreen, regardless of their response.
+   */
+  async storeUserCompletion(completionData: {
+    user_profile: any;
+    starred_candidates: string[];
+    starred_measures: string[];
+    readiness_response: 'yes' | 'no' | 'still-thinking';
+    session_id?: string;
+  }): Promise<ApiResponse<{ message: string; readiness_response: string; timestamp: string }>> {
+    try {
+      console.log('📨 Storing user completion data...');
+
+      const response = await fetchWithTimeout(`${this.baseUrl}/api/user-completion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(completionData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('✅ User completion data stored successfully');
+        return {
+          data: {
+            message: data.message,
+            readiness_response: data.readiness_response,
+            timestamp: data.timestamp
+          },
+          success: true
+        };
+      } else {
+        throw new Error(data.error || 'Failed to store user completion data');
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to store user completion data:', error);
+
+      return {
+        data: {
+          message: 'Failed to store completion data',
+          readiness_response: completionData.readiness_response,
+          timestamp: new Date().toISOString()
+        },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Store email signup data from various screens
+   *
+   * Handles email signups from both ThankYouScreen and CastItScreen
+   * with proper source tracking and consent preferences.
+   */
+  async storeEmailSignup(emailData: {
+    email: string;
+    source: 'thankyou' | 'cast';
+    wants_updates?: boolean;
+    user_profile?: any;
+    ballot_data?: any;
+    session_id?: string;
+  }): Promise<ApiResponse<{ message: string; email: string; source: string; timestamp: string }>> {
+    try {
+      console.log('📧 Storing email signup...');
+
+      const response = await fetchWithTimeout(`${this.baseUrl}/api/email-signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('✅ Email signup stored successfully');
+        return {
+          data: {
+            message: data.message,
+            email: data.email,
+            source: data.source,
+            timestamp: data.timestamp
+          },
+          success: true
+        };
+      } else {
+        throw new Error(data.error || 'Failed to store email signup');
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to store email signup:', error);
+
+      return {
+        data: {
+          message: 'Failed to store email signup',
+          email: emailData.email,
+          source: emailData.source,
+          timestamp: new Date().toISOString()
+        },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
    * Test backend connectivity
    *
    * This method can be used to check if the backend is reachable

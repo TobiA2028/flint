@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,10 +17,13 @@ import { ReadyToCastScreen } from "@/screens/ReadyToCastScreen";
 import { FeedbackScreen } from "@/screens/FeedbackScreen";
 import { ThankYouScreen } from "@/screens/ThankYouScreen";
 import { CastItScreen } from "@/screens/CastItScreen";
+import { DebugScreen } from "@/screens/DebugScreen";
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  const [showDebug, setShowDebug] = useState(false);
+
   const {
     state,
     updateUserProfile,
@@ -77,7 +80,25 @@ const App = () => {
       const newUrl = window.location.pathname + window.location.hash;
       window.history.replaceState({}, '', newUrl);
     }
+
+    // Check for debug parameter
+    if (urlParams.get('debug') === 'true') {
+      setShowDebug(true);
+    }
   }, [resetState]);
+
+  // Add keyboard shortcut for debug screen (Ctrl/Cmd + D)
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        setShowDebug(!showDebug);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [showDebug]);
 
   // Scroll to top whenever the current step changes
   useEffect(() => {
@@ -100,9 +121,19 @@ const App = () => {
   }, [state.currentStep]);
 
   const renderCurrentScreen = () => {
+    // Show debug screen if active
+    if (showDebug) {
+      return <DebugScreen onBack={() => setShowDebug(false)} />;
+    }
+
     switch (state.currentStep) {
       case 1:
-        return <WelcomeScreen onContinue={handleNextStep} />;
+        return (
+          <WelcomeScreen
+            onContinue={handleNextStep}
+            onDebug={() => setShowDebug(true)}
+          />
+        );
       
       case 2:
         return (
@@ -176,6 +207,9 @@ const App = () => {
           <ReadyToCastScreen
             onYes={handleReadyYes}
             onNotReady={handleNotReady}
+            userProfile={state.userProfile}
+            starredCandidates={state.starredCandidates}
+            starredMeasures={state.starredMeasures}
           />
         );
       
@@ -191,6 +225,7 @@ const App = () => {
           return (
             <ThankYouScreen
               onRestart={handleRestartApp}
+              userProfile={state.userProfile}
             />
           );
         } else {
@@ -198,6 +233,12 @@ const App = () => {
             <CastItScreen
               zipCode={state.userProfile.zipCode}
               onRestart={handleRestartApp}
+              userProfile={state.userProfile}
+              ballotData={{
+                starredCandidates: state.starredCandidates,
+                starredMeasures: state.starredMeasures,
+                zipCode: state.userProfile.zipCode
+              }}
             />
           );
         }

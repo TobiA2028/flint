@@ -1,13 +1,14 @@
 import { CTAButton } from '@/components/CTAButton';
 import { MascotGuide } from '@/components/MascotGuide';
 import { SparkHeader } from '@/components/SparkHeader';
-import { Flame } from 'lucide-react';
+import { Flame, Bug } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onContinue: () => void;
+  onDebug?: () => void;
 }
 
-export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
+export const WelcomeScreen = ({ onContinue, onDebug }: WelcomeScreenProps) => {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
       
@@ -36,14 +37,27 @@ export const WelcomeScreen = ({ onContinue }: WelcomeScreenProps) => {
         </div>
         
         {/* CTA */}
-        <CTAButton 
-          onClick={onContinue}
-          variant="spark"
-          className="w-full"
-        >
-          <Flame className="w-5 h-5 mr-2" />
-          Let's Spark It
-        </CTAButton>
+        <div className="space-y-4">
+          <CTAButton
+            onClick={onContinue}
+            variant="spark"
+            className="w-full"
+          >
+            <Flame className="w-5 h-5 mr-2" />
+            Let's Spark It
+          </CTAButton>
+
+          {onDebug && (
+            <CTAButton
+              onClick={onDebug}
+              variant="secondary"
+              className="w-full"
+            >
+              <Bug className="w-4 h-4 mr-2" />
+              Debug Dashboard (Test Email Storage)
+            </CTAButton>
+          )}
+        </div>
       </div>
     </div>
   );
