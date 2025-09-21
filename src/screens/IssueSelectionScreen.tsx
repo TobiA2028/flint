@@ -4,8 +4,9 @@ import { CTAButton } from '@/components/CTAButton';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { MascotGuide } from '@/components/MascotGuide';
 import { ISSUES } from '@/data/issues';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { SparkHeader } from '@/components/SparkHeader';
+import { apiClient, generateSessionId } from '@/lib/api';
 
 interface IssueSelectionScreenProps {
   selectedIssues: string[];
@@ -13,15 +14,52 @@ interface IssueSelectionScreenProps {
   onContinue: () => void;
 }
 
-export const IssueSelectionScreen = ({ 
-  selectedIssues, 
-  onIssuesChange, 
-  onContinue 
+export const IssueSelectionScreen = ({
+  selectedIssues,
+  onIssuesChange,
+  onContinue
 }: IssueSelectionScreenProps) => {
   const maxSelections = 3;
   const canContinue = selectedIssues.length === maxSelections;
 
+  // ========================================================================
+  // API INTEGRATION STATE
+  // ========================================================================
+
+  /**
+   * Loading state for API calls
+   *
+   * This tracks when we're submitting data to the backend,
+   * allowing us to show loading indicators and disable buttons.
+   */
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /**
+   * Submission status tracking
+   *
+   * Tracks the result of the API call so we can show success/error feedback
+   * to the user before proceeding to the next screen.
+   */
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  /**
+   * Error message for failed submissions
+   *
+   * Stores user-friendly error messages to display when API calls fail.
+   */
+  const [errorMessage, setErrorMessage] = useState<string>('');
+
+  // ========================================================================
+  // EVENT HANDLERS
+  // ========================================================================
+
   const handleIssueSelect = (issueId: string) => {
+    // Reset submission status when user changes selection
+    if (submissionStatus !== 'idle') {
+      setSubmissionStatus('idle');
+      setErrorMessage('');
+    }
+
     if (selectedIssues.includes(issueId)) {
       onIssuesChange(selectedIssues.filter(id => id !== issueId));
     } else if (selectedIssues.length < maxSelections) {
@@ -29,8 +67,111 @@ export const IssueSelectionScreen = ({
     }
   };
 
+  /**
+   * Enhanced continue handler with backend integration
+   *
+   * This function now:
+   * 1. Generates a session ID for the user
+   * 2. Calls the backend API to increment issue counts
+   * 3. Provides user feedback during the process
+   * 4. Handles success and error scenarios gracefully
+   *
+   * Learning objectives:
+   * - Understand async/await patterns in React event handlers
+   * - Learn how to provide user feedback during API calls
+   * - Practice error handling and recovery patterns
+   * - See how to integrate frontend state with backend APIs
+   */
+  const handleContinue = async () => {
+    // TODO: Learn about these validation patterns
+    if (!canContinue || isSubmitting) {
+      return; // Prevent multiple submissions or invalid submissions
+    }
+
+    // Start the submission process
+    setIsSubmitting(true);
+    setSubmissionStatus('idle');
+    setErrorMessage('');
+
+    try {
+      console.log('🚀 Starting issue submission process...');
+
+      // TODO: Session Management Learning
+      // Generate a unique session ID for this user
+      // In a production app, you might:
+      // - Use browser fingerprinting
+      // - Generate this server-side
+      // - Use more sophisticated user identification
+      const sessionId = generateSessionId();
+      console.log('📝 Generated session ID:', sessionId);
+
+      // TODO: Local Storage Learning
+      // Store the session ID in localStorage so we can track this user
+      // across page reloads and prevent duplicate submissions
+      localStorage.setItem('flint-session-id', sessionId);
+
+      // TODO: API Integration Learning
+      // Call the backend API to increment issue counts
+      // Notice how we're using the structured API client we created
+      const response = await apiClient.incrementIssues({
+        issueIds: selectedIssues,
+        userId: sessionId
+      });
+
+      console.log('📊 API Response:', response);
+
+      if (response.success) {
+        // TODO: Success Handling Learning
+        // Show success feedback to the user
+        setSubmissionStatus('success');
+        console.log('✅ Successfully submitted issue selections!');
+
+        // Wait a moment to show success feedback, then proceed
+        setTimeout(() => {
+          onContinue(); // Move to next screen
+        }, 1000);
+
+      } else {
+        // TODO: Error Handling Learning
+        // Handle API errors gracefully
+        throw new Error(response.error || 'Failed to submit selections');
+      }
+
+    } catch (error) {
+      console.error('❌ Error submitting issue selections:', error);
+
+      // TODO: User Experience Learning
+      // Set error state to show user-friendly error message
+      setSubmissionStatus('error');
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong. Please try again.'
+      );
+    } finally {
+      // TODO: State Management Learning
+      // Always clear loading state, regardless of success/failure
+      setIsSubmitting(false);
+    }
+  };
+
+  /**
+   * Dynamic mascot message based on selection and submission state
+   *
+   * This function now considers both the selection state and the
+   * API submission state to provide contextual feedback.
+   */
   const getMascotMessage = () => {
-    if (selectedIssues.length === 0) {
+    // TODO: State-based UI Learning
+    // Notice how we're providing different messages based on multiple state variables
+
+    if (submissionStatus === 'success') {
+      return "Amazing! Your choices have been recorded. Moving to next step...";
+    } else if (submissionStatus === 'error') {
+      return "Oops! Something went wrong. Please try again.";
+    } else if (isSubmitting) {
+      return "Recording your choices with the community...";
+    } else if (selectedIssues.length === 0) {
       return "Pick the 3 issues that matter most to you!";
     } else if (selectedIssues.length < maxSelections) {
       return `Great choice! Select ${maxSelections - selectedIssues.length} more.`;
@@ -45,11 +186,18 @@ export const IssueSelectionScreen = ({
         <ProgressIndicator currentStep={2} totalSteps={10} />
         
         <div className="text-center mb-8">
-          <MascotGuide 
+          <MascotGuide
             size="md"
-            className="mb-6"
+            className="mb-4"
           />
-          
+
+          {/* TODO: Dynamic Mascot Message Display */}
+          <div className="mb-6">
+            <p className="text-lg font-medium text-foreground">
+              {getMascotMessage()}
+            </p>
+          </div>
+
           <SparkHeader
             title="What issues matter most to you?"
           />
@@ -78,15 +226,72 @@ export const IssueSelectionScreen = ({
           ))}
         </div>
         
+        {/* ================================================================ */}
+        {/* STATUS FEEDBACK SECTION */}
+        {/* ================================================================ */}
+
+        {/* Error Message Display */}
+        {submissionStatus === 'error' && errorMessage && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center space-x-2 text-red-700">
+              <AlertCircle className="w-5 h-5" />
+              <p className="font-medium">Submission Failed</p>
+            </div>
+            <p className="text-red-600 text-sm mt-1">{errorMessage}</p>
+            <p className="text-red-500 text-xs mt-2">
+              💡 Make sure your backend server is running on port 5000
+            </p>
+          </div>
+        )}
+
+        {/* Success Message Display */}
+        {submissionStatus === 'success' && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center space-x-2 text-green-700">
+              <CheckCircle className="w-5 h-5" />
+              <p className="font-medium">Success!</p>
+            </div>
+            <p className="text-green-600 text-sm mt-1">
+              Your issue selections have been recorded with the community.
+            </p>
+          </div>
+        )}
+
+        {/* ================================================================ */}
+        {/* ENHANCED CONTINUE BUTTON */}
+        {/* ================================================================ */}
+
         <div className="flex justify-center">
           <CTAButton
-            onClick={onContinue}
-            disabled={!canContinue}
-            variant={'spark'}
+            onClick={handleContinue}  // TODO: Notice we changed from onContinue to handleContinue
+            disabled={!canContinue || isSubmitting}  // TODO: Disable during submission
+            variant={submissionStatus === 'success' ? 'secondary' : 'spark'}
             className="min-w-[200px]"
           >
-            Continue
-            <ArrowRight className="w-5 h-5 ml-2" />
+            {/* TODO: Dynamic Button Content Learning */}
+            {/* Notice how the button content changes based on the current state */}
+
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Submitting...
+              </>
+            ) : submissionStatus === 'success' ? (
+              <>
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Success!
+              </>
+            ) : submissionStatus === 'error' ? (
+              <>
+                Try Again
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </>
+            ) : (
+              <>
+                Continue
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </>
+            )}
           </CTAButton>
         </div>
       </div>

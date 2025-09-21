@@ -277,6 +277,6 @@ if __name__ == '__main__':
     # Start the development server
     app.run(
         host='127.0.0.1',  # localhost only for security
-        port=5000,
+        port=5001,         # using 5001 to avoid macOS AirPlay conflict
         debug=True  # Enable debug mode for development
     )

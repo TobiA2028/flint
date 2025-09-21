@@ -1,0 +1,440 @@
+/**
+ * API Client for Flint Spark Civic Engagement Backend
+ *
+ * This module creates a centralized API client that handles all communication
+ * between the React frontend and the Flask backend. It provides a clean
+ * interface for making HTTP requests with proper error handling and TypeScript support.
+ *
+ * Learning objectives:
+ * - Understand separation of concerns in frontend architecture
+ * - Learn TypeScript interface design for API responses
+ * - Practice async/await and Promise handling
+ * - Implement proper error handling for network requests
+ * - Create reusable code patterns for API communication
+ */
+
+// ============================================================================
+// TYPESCRIPT INTERFACES
+// ============================================================================
+
+/**
+ * Standard API response wrapper
+ *
+ * This interface ensures all our API responses have a consistent structure,
+ * making it easier to handle success/error cases throughout the application.
+ */
+export interface ApiResponse<T> {
+  data: T;
+  success: boolean;
+  error?: string;
+}
+
+/**
+ * Issue frequencies response from /api/issues/frequencies
+ *
+ * This matches the structure returned by our Flask backend.
+ */
+export interface IssueFrequencies {
+  frequencies: Record<string, number>;  // issue_id -> count mapping
+  total_users: number;                  // total users who have participated
+}
+
+/**
+ * Request body for /api/issues/increment
+ *
+ * This defines what data we need to send when a user selects their issues.
+ */
+export interface IncrementIssuesRequest {
+  issueIds: string[];      // Array of selected issue IDs
+  userId?: string;         // Optional user session ID to prevent duplicates
+}
+
+/**
+ * Success response from /api/issues/increment
+ */
+export interface IncrementIssuesResponse {
+  success: boolean;
+  message: string;
+  updated_issues: string[];
+}
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+/**
+ * API Configuration
+ *
+ * Centralized configuration makes it easy to change the backend URL
+ * for different environments (development, production, testing).
+ */
+const API_CONFIG = {
+  // Base URL for our Flask backend
+  BASE_URL: 'http://localhost:5001',
+
+  // Request timeout in milliseconds
+  TIMEOUT: 10000,
+
+  // Default headers for all requests
+  DEFAULT_HEADERS: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  }
+};
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Generate a unique session ID for user tracking
+ *
+ * This creates a simple session identifier to help prevent duplicate
+ * counting when users submit their issue selections multiple times.
+ *
+ * In a production app, you might use a more sophisticated approach
+ * like JWT tokens or server-generated session IDs.
+ */
+export function generateSessionId(): string {
+  // TODO: This is a simple implementation - you could improve it!
+  // Consider using:
+  // - Browser fingerprinting
+  // - More sophisticated random ID generation
+  // - Server-generated session tokens
+
+  const timestamp = Date.now();
+  const randomPart = Math.random().toString(36).substring(2);
+  return `session_${timestamp}_${randomPart}`;
+}
+
+/**
+ * Create a timeout promise for request timeouts
+ *
+ * This helper allows us to cancel requests that take too long,
+ * providing better user experience.
+ */
+function createTimeoutPromise(timeoutMs: number): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`Request timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+}
+
+/**
+ * Enhanced fetch wrapper with timeout and error handling
+ *
+ * This wrapper adds timeout support and consistent error handling
+ * to the standard fetch API.
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = API_CONFIG.TIMEOUT
+): Promise<Response> {
+  // TODO: Learn about Promise.race and how it enables timeout functionality
+  // Promise.race returns the first promise that resolves or rejects
+
+  const fetchPromise = fetch(url, {
+    ...options,
+    headers: {
+      ...API_CONFIG.DEFAULT_HEADERS,
+      ...options.headers,
+    },
+  });
+
+  const timeoutPromise = createTimeoutPromise(timeoutMs);
+
+  return Promise.race([fetchPromise, timeoutPromise]);
+}
+
+// ============================================================================
+// API CLIENT CLASS
+// ============================================================================
+
+/**
+ * Main API Client Class
+ *
+ * This class encapsulates all API communication logic, providing
+ * a clean interface for components to interact with the backend.
+ */
+export class ApiClient {
+  private baseUrl: string;
+
+  constructor(baseUrl: string = API_CONFIG.BASE_URL) {
+    this.baseUrl = baseUrl;
+  }
+
+  /**
+   * Get current issue frequencies and total user count
+   *
+   * This method fetches the social proof data that shows how many
+   * people in the community have selected each issue.
+   *
+   * Usage in components:
+   * ```typescript
+   * const api = new ApiClient();
+   * const response = await api.getIssueFrequencies();
+   * if (response.success) {
+   *   console.log('Issue data:', response.data);
+   * }
+   * ```
+   */
+  async getIssueFrequencies(): Promise<ApiResponse<IssueFrequencies>> {
+    try {
+      // TODO: Add logging for debugging
+      console.log('🔄 Fetching issue frequencies from backend...');
+
+      const response = await fetchWithTimeout(`${this.baseUrl}/api/issues/frequencies`);
+
+      // TODO: Learn about HTTP status codes and how to handle them
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: IssueFrequencies = await response.json();
+
+      console.log('✅ Successfully fetched issue frequencies:', data);
+
+      return {
+        data,
+        success: true
+      };
+
+    } catch (error) {
+      // TODO: Learn about different types of errors and how to handle them
+      console.error('❌ Failed to fetch issue frequencies:', error);
+
+      return {
+        data: { frequencies: {}, total_users: 0 },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Increment the count for selected issues
+   *
+   * This method is called when a user completes the issue selection
+   * screen, sending their choices to the backend for tracking.
+   *
+   * Usage in components:
+   * ```typescript
+   * const api = new ApiClient();
+   * const sessionId = generateSessionId();
+   * const response = await api.incrementIssues({
+   *   issueIds: ['housing', 'education', 'healthcare'],
+   *   userId: sessionId
+   * });
+   * ```
+   */
+  async incrementIssues(request: IncrementIssuesRequest): Promise<ApiResponse<IncrementIssuesResponse>> {
+    try {
+      console.log('🔄 Incrementing issue counts:', request);
+
+      const response = await fetchWithTimeout(`${this.baseUrl}/api/issues/increment`, {
+        method: 'POST',
+        body: JSON.stringify(request),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: IncrementIssuesResponse = await response.json();
+
+      console.log('✅ Successfully incremented issue counts:', data);
+
+      return {
+        data,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ Failed to increment issue counts:', error);
+
+      return {
+        data: { success: false, message: 'Failed to update', updated_issues: [] },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Reset all issue counts to demo data
+   *
+   * This is useful for demo purposes - you can reset the data
+   * between demonstrations to show fresh social proof numbers.
+   *
+   * Note: In a production app, this endpoint would likely be
+   * protected and only available to administrators.
+   */
+  async resetIssues(): Promise<ApiResponse<{ success: boolean; message: string }>> {
+    try {
+      console.log('🔄 Resetting issue counts to demo data...');
+
+      const response = await fetchWithTimeout(`${this.baseUrl}/api/issues/reset`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('✅ Successfully reset issue counts:', data);
+
+      return {
+        data,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ Failed to reset issue counts:', error);
+
+      return {
+        data: { success: false, message: 'Reset failed' },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Test backend connectivity
+   *
+   * This method can be used to check if the backend is reachable
+   * and responding. Useful for debugging connection issues.
+   */
+  async testConnection(): Promise<ApiResponse<{ status: string; message: string }>> {
+    try {
+      console.log('🔄 Testing backend connection...');
+
+      const response = await fetchWithTimeout(`${this.baseUrl}/`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('✅ Backend connection successful:', data);
+
+      return {
+        data,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ Backend connection failed:', error);
+
+      return {
+        data: { status: 'error', message: 'Connection failed' },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+}
+
+// ============================================================================
+// SINGLETON INSTANCE
+// ============================================================================
+
+/**
+ * Default API client instance
+ *
+ * We export a default instance so components can easily import and use
+ * the API client without creating new instances everywhere.
+ *
+ * Usage in components:
+ * ```typescript
+ * import { apiClient } from '@/lib/api';
+ *
+ * const data = await apiClient.getIssueFrequencies();
+ * ```
+ */
+export const apiClient = new ApiClient();
+
+// ============================================================================
+// REACT HOOKS (OPTIONAL ADVANCED FEATURE)
+// ============================================================================
+
+/**
+ * TODO: Advanced Learning Exercise
+ *
+ * You could create custom React hooks that encapsulate API calls
+ * and provide loading/error states automatically. For example:
+ *
+ * ```typescript
+ * export function useIssueFrequencies() {
+ *   const [data, setData] = useState(null);
+ *   const [loading, setLoading] = useState(false);
+ *   const [error, setError] = useState(null);
+ *
+ *   const fetchData = async () => {
+ *     setLoading(true);
+ *     const response = await apiClient.getIssueFrequencies();
+ *     if (response.success) {
+ *       setData(response.data);
+ *     } else {
+ *       setError(response.error);
+ *     }
+ *     setLoading(false);
+ *   };
+ *
+ *   return { data, loading, error, refetch: fetchData };
+ * }
+ * ```
+ *
+ * This would make components even cleaner by handling state management
+ * automatically. Consider implementing this as a learning exercise!
+ */
+
+// ============================================================================
+// LEARNING EXERCISES AND NEXT STEPS
+// ============================================================================
+
+/**
+ * TODO Exercise 1: Test the API Client
+ *
+ * Try these in the browser console:
+ * 1. Import the API client
+ * 2. Test connection: await apiClient.testConnection()
+ * 3. Get frequencies: await apiClient.getIssueFrequencies()
+ * 4. Make sure your Flask backend is running on port 5000!
+ */
+
+/**
+ * TODO Exercise 2: Error Handling
+ *
+ * Test error scenarios:
+ * 1. Stop your Flask backend and try API calls
+ * 2. Modify the BASE_URL to an invalid address
+ * 3. See how the error handling works
+ * 4. Think about how to improve user experience during errors
+ */
+
+/**
+ * TODO Exercise 3: Enhancement Ideas
+ *
+ * Consider implementing:
+ * 1. Request caching to avoid duplicate API calls
+ * 2. Retry logic for failed requests
+ * 3. Request cancellation for component unmounting
+ * 4. Progress tracking for slow requests
+ * 5. Request deduplication for rapid successive calls
+ */
+
+/**
+ * TODO Exercise 4: TypeScript Learning
+ *
+ * Experiment with:
+ * 1. Adding new interfaces for additional API endpoints
+ * 2. Using generic types for reusable API patterns
+ * 3. Creating union types for different response formats
+ * 4. Adding optional vs required fields in interfaces
+ */

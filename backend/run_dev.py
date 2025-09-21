@@ -115,7 +115,7 @@ def main():
 
         app.run(
             host='127.0.0.1',      # localhost only for security
-            port=5000,             # standard Flask port
+            port=5001,             # using 5001 to avoid macOS AirPlay conflict
             debug=True,            # enable debug mode
             use_reloader=True,     # auto-reload on code changes
             use_debugger=True,     # enable interactive debugger
