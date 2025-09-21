@@ -847,6 +847,129 @@ export class ApiClient {
 export const apiClient = new ApiClient();
 
 // ============================================================================
+// SUPABASE INTEGRATION (OPTIONAL)
+// ============================================================================
+
+/**
+ * Optional Supabase Client for Real-time Features
+ *
+ * This provides direct database access for features like:
+ * - Real-time issue count updates
+ * - Live social proof data
+ * - Instant data synchronization
+ *
+ * Note: The Flask API remains the primary interface for most operations.
+ * This is for advanced features that benefit from real-time capabilities.
+ */
+
+import { supabase, typedSupabase } from './supabase';
+
+export class SupabaseApiClient {
+  /**
+   * Get all issues with real-time subscription capability
+   */
+  async getIssuesRealtime(callback?: (issues: any[]) => void) {
+    try {
+      // Initial fetch
+      const { data: issues, error } = await typedSupabase
+        .from('issues')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+
+      // Set up real-time subscription if callback provided
+      if (callback) {
+        const subscription = typedSupabase
+          .channel('issues_changes')
+          .on('postgres_changes',
+              { event: '*', schema: 'public', table: 'issues' },
+              (payload) => {
+                console.log('📡 Real-time issue update:', payload);
+                // Re-fetch all issues on any change
+                this.getIssuesRealtime().then(({ data }) => {
+                  if (data) callback(data);
+                });
+              }
+          )
+          .subscribe();
+
+        // Return unsubscribe function
+        return {
+          data: issues,
+          unsubscribe: () => subscription.unsubscribe()
+        };
+      }
+
+      return { data: issues };
+
+    } catch (error) {
+      console.error('❌ Error fetching issues from Supabase:', error);
+      return { data: null, error };
+    }
+  }
+
+  /**
+   * Increment issue counts directly in Supabase
+   * (Alternative to Flask API for real-time updates)
+   */
+  async incrementIssuesDirect(issueIds: string[], userId?: string) {
+    try {
+      const updates = await Promise.all(
+        issueIds.map(async (issueId) => {
+          const { data, error } = await typedSupabase.rpc('increment_issue_count', {
+            issue_id_param: issueId
+          });
+
+          if (error) throw error;
+          return data;
+        })
+      );
+
+      console.log('✅ Issues incremented directly via Supabase');
+      return { success: true, data: updates };
+
+    } catch (error) {
+      console.error('❌ Error incrementing issues via Supabase:', error);
+      return { success: false, error };
+    }
+  }
+
+  /**
+   * Store user completion directly in Supabase
+   */
+  async storeUserCompletionDirect(completionData: any) {
+    try {
+      const { data, error } = await typedSupabase
+        .from('user_completions')
+        .insert({
+          user_profile: completionData.user_profile,
+          starred_candidates: completionData.starred_candidates,
+          starred_measures: completionData.starred_measures,
+          readiness_response: completionData.readiness_response,
+          session_id: completionData.session_id,
+          completed_at: completionData.completed_at || new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      console.log('✅ User completion stored directly via Supabase');
+      return { success: true, data };
+
+    } catch (error) {
+      console.error('❌ Error storing user completion via Supabase:', error);
+      return { success: false, error };
+    }
+  }
+}
+
+// Export Supabase client instance
+export const supabaseApiClient = new SupabaseApiClient();
+
+// Export Supabase client for direct use
+export { supabase, typedSupabase };
+
+// ============================================================================
 // REACT HOOKS (OPTIONAL ADVANCED FEATURE)
 // ============================================================================
 

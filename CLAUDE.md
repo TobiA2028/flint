@@ -20,6 +20,7 @@ When working on tasks in this repository, follow these rules:
 
 ## Technology Stack
 
+### Frontend
 - **React 18** with TypeScript
 - **Vite** for build tooling and development server
 - **shadcn/ui** component library with Radix UI primitives
@@ -28,6 +29,13 @@ When working on tasks in this repository, follow these rules:
 - **React Router DOM** for routing
 - **Zod** for schema validation
 - **React Hook Form** with resolvers
+- **Supabase JS** for optional real-time features
+
+### Backend
+- **Flask** web framework with Python
+- **Supabase** PostgreSQL database (with in-memory fallback)
+- **Flask-CORS** for cross-origin requests
+- **python-dotenv** for environment configuration
 
 ## Project Structure
 
@@ -55,11 +63,13 @@ flint-spark-civic/
 │   │   ├── use-mobile.tsx
 │   │   └── use-toast.ts
 │   ├── data/                # Static data and configuration
-│   │   └── issues.ts        # Civic issues definitions
+│   │   └── issues.ts        # Legacy: Moved to backend/Supabase
 │   ├── types/               # TypeScript type definitions
 │   │   └── index.ts
-│   ├── lib/                 # Utility functions
-│   │   └── utils.ts
+│   ├── lib/                 # Utility functions and API clients
+│   │   ├── utils.ts
+│   │   ├── api.ts           # Flask API client
+│   │   └── supabase.ts      # Supabase client configuration
 │   ├── pages/               # Route-based pages
 │   │   ├── Index.tsx
 │   │   └── NotFound.tsx
@@ -68,8 +78,22 @@ flint-spark-civic/
 │   ├── App.tsx              # Main application component
 │   ├── main.tsx             # Application entry point
 │   └── index.css            # Global styles
-├── public/                  # Public assets
-├── package.json             # Dependencies and scripts
+├── backend/                 # Flask backend
+│   ├── app.py              # Flask application
+│   ├── config.py           # Configuration management
+│   ├── data_store.py       # Legacy in-memory storage
+│   ├── supabase_client.py  # Supabase database client
+│   ├── requirements.txt    # Python dependencies
+│   └── .env.example        # Environment variables template
+├── database/               # Database setup and migration
+│   ├── schema.sql          # PostgreSQL database schema
+│   ├── functions.sql       # PostgreSQL functions
+│   ├── seed_data.sql       # Demo data for manual seeding
+│   ├── migrate.py          # Python migration script
+│   └── README.md           # Database setup instructions
+├── public/                 # Public assets
+├── package.json            # Frontend dependencies and scripts
+├── .env.example            # Frontend environment variables template
 ├── vite.config.ts          # Vite configuration
 ├── tailwind.config.ts      # Tailwind CSS configuration
 ├── components.json         # shadcn/ui configuration
@@ -79,6 +103,7 @@ flint-spark-civic/
 
 ## Development Commands
 
+### Frontend
 ```bash
 # Start development server (runs on port 8080)
 npm run dev
@@ -99,6 +124,43 @@ npm run preview
 npm i
 ```
 
+### Backend
+```bash
+# Install Python dependencies
+cd backend && pip install -r requirements.txt
+
+# Start Flask development server (port 5001)
+cd backend && python3 app.py
+
+# Run database migration (after Supabase setup)
+cd database && python migrate.py --seed
+```
+
+## Supabase Setup
+
+### Quick Start
+1. **Create Supabase Project**: Go to [supabase.com](https://supabase.com) and create a new project
+2. **Get Credentials**: Copy your project URL and service role key
+3. **Set Environment Variables**:
+   ```bash
+   # Frontend (.env)
+   VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+
+   # Backend (backend/.env)
+   SUPABASE_URL=https://your-project-ref.supabase.co
+   SUPABASE_KEY=your-service-role-key
+   ```
+4. **Setup Database**:
+   - Run `database/schema.sql` in Supabase SQL Editor
+   - Run `database/functions.sql` in Supabase SQL Editor
+   - Run `cd database && python migrate.py --seed` to populate data
+
+### Fallback Behavior
+- **Without Supabase**: App automatically falls back to in-memory storage
+- **With Supabase**: App uses PostgreSQL for persistent data storage
+- **Real-time Features**: Available only with Supabase (optional enhancement)
+
 ## Application Architecture
 
 ### Core State Management
@@ -107,7 +169,14 @@ The app uses a centralized state pattern via `useAppState` hook located at `src/
 - Manages 7-step flow progression (`currentStep`)
 - Tracks user profile data (issues, demographics, zipCode)
 - Handles starred candidates and ballot measures
-- **NEW**: Manages dynamic issue loading from backend with loading/error states
+- **UPDATED**: Manages dynamic issue loading from Supabase/Flask backend with loading/error states
+
+### Data Architecture
+- **Frontend State**: React state management for UI flow and user selections
+- **Backend API**: Flask REST API serving civic data from Supabase or in-memory storage
+- **Database**: PostgreSQL via Supabase for persistent data storage
+- **Real-time**: Optional Supabase real-time subscriptions for live updates
+- **Fallback**: Graceful degradation to in-memory storage when Supabase unavailable
 
 ### Screen Flow Architecture
 The app follows a linear 7-step flow managed by `src/App.tsx`:
@@ -125,8 +194,8 @@ The app follows a linear 7-step flow managed by `src/App.tsx`:
 - **Custom Components**: Located in `src/components/` (app-specific components)
 - **Screens**: Located in `src/screens/` (main app screens)
 - **Types**: Centralized in `src/types/index.ts`
-- **Data**: ~~Static data in `src/data/`~~ **MIGRATED**: Now loaded dynamically from backend
-- **API Layer**: Located in `src/lib/api.ts` (backend communication)
+- **Data**: ~~Static data in `src/data/`~~ **MIGRATED**: Now loaded dynamically from Supabase via backend
+- **API Layer**: Located in `src/lib/api.ts` (Flask API) and `src/lib/supabase.ts` (direct Supabase access)
 
 ### Key Data Models
 - `AppState`: Overall app state structure (includes issue loading states)
@@ -161,4 +230,9 @@ No test framework is currently configured. When adding tests, check the codebase
 ## Local Storage & Backend Integration
 The app persists state to localStorage and will restore user progress on reload. State is saved automatically on every change via `useAppState` hook.
 
-**Backend Integration**: Issue data is now loaded from the Flask backend on app initialization. The backend serves as the single source of truth for issue definitions and counts, eliminating data synchronization issues between frontend and backend.
+**Supabase Integration**: All civic data (issues, offices, ballot measures, candidates) is now loaded from Supabase PostgreSQL via the Flask backend. The database serves as the single source of truth for civic definitions and user interaction counts.
+
+**Data Flow**:
+1. **Frontend** ↔ **Flask API** ↔ **Supabase PostgreSQL**
+2. **Optional**: Frontend ↔ **Supabase JS Client** (for real-time features)
+3. **Fallback**: Frontend ↔ **Flask API** ↔ **In-memory Storage** (when Supabase unavailable)

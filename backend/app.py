@@ -16,9 +16,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 
-# Import your data store module
-from data_store import IssueDataStore, create_data_store
+# Load environment variables from .env file
+load_dotenv()
+
+# Import your data store modules
+from data_store import IssueDataStore, create_data_store  # Legacy support
+from supabase_client import SupabaseDataStore, create_supabase_data_store  # New Supabase client
 from config import get_config
 
 # ============================================================================
@@ -68,10 +73,26 @@ def create_app():
     # DATA STORE INITIALIZATION
     # ========================================================================
 
-    # Initialize your data store
-    # This will hold all the issue frequency data in memory
-    app.issue_store = create_data_store()
-    print("✅ Data store initialized successfully")
+    # Initialize your data store - try Supabase first, fallback to in-memory
+    try:
+        # Load configuration to get Supabase credentials
+        config = get_config()
+
+        if config.SUPABASE_URL and config.SUPABASE_KEY:
+            # Use Supabase for persistent storage
+            app.issue_store = create_supabase_data_store(config.SUPABASE_URL, config.SUPABASE_KEY)
+            print("✅ Supabase data store initialized successfully")
+        else:
+            # Fallback to in-memory storage if Supabase not configured
+            print("⚠️  Supabase credentials not found, falling back to in-memory storage")
+            app.issue_store = create_data_store()
+            print("✅ In-memory data store initialized successfully")
+    except Exception as e:
+        # If Supabase fails, fallback to in-memory storage
+        print(f"⚠️  Supabase initialization failed: {e}")
+        print("📝 Falling back to in-memory storage")
+        app.issue_store = create_data_store()
+        print("✅ In-memory data store initialized successfully")
 
     # ========================================================================
     # UTILITY FUNCTIONS

@@ -82,7 +82,18 @@ class Config:
     DEFAULT_PAGE_SIZE = 50
 
     # ========================================================================
-    # DATA STORE SETTINGS
+    # SUPABASE SETTINGS
+    # ========================================================================
+
+    # Supabase configuration from environment variables
+    SUPABASE_URL = os.environ.get('SUPABASE_URL')
+    SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+
+    # Database connection string (alternative access method)
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+
+    # ========================================================================
+    # DATA STORE SETTINGS (Legacy - kept for migration purposes)
     # ========================================================================
 
     # Whether to persist data between server restarts
@@ -114,6 +125,9 @@ class DevelopmentConfig(Config):
 
     # Development-specific settings
     PERSIST_DATA = False  # Don't persist in development (fresh data each restart)
+
+    # Development Supabase settings
+    # In development, you might use the same project or a development-specific one
 
 
 class TestingConfig(Config):
@@ -152,6 +166,10 @@ class ProductionConfig(Config):
 
     # Production-specific settings
     PERSIST_DATA = True  # Persist data in production
+
+    # Production Supabase settings
+    # In production, ensure environment variables are properly set
+    # and consider using connection pooling for better performance
 
 
 # ============================================================================
