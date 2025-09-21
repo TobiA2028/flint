@@ -131,6 +131,8 @@ def create_app():
         }
         """
         log_request('/api/issues/frequencies', 'GET')
+        frequencies = app.issue_store.get_frequencies()
+        total_users = app.issue_store.get_total_users()
 
         # TODO: Implement this endpoint
         # You need to:
@@ -140,21 +142,8 @@ def create_app():
 
         # Placeholder response (replace with real implementation)
         return jsonify({
-            "frequencies": {
-                "housing": 1247,
-                "education": 982,
-                "healthcare": 1156,
-                "environment": 891,
-                "transportation": 743,
-                "safety": 1089,
-                "economy": 1298,
-                "infrastructure": 567,
-                "immigration": 432,
-                "taxes": 789,
-                "rights": 923,
-                "seniors": 445
-            },
-            "total_users": 1000  # This should be calculated
+            "frequencies": frequencies,
+            "total_users": total_users
         })
 
     @app.route('/api/issues/increment', methods=['POST'])
@@ -191,11 +180,17 @@ def create_app():
         # Check if 'issueIds' is in the data
         # Check if it's a list
         # Check if the issue IDs are valid
+        if not data or "issueIds" not in data:
+            return jsonify({
+                "error":"issueIds is required."
+            }), 400
 
         # TODO: Update your data store
         # Increment the count for each issue in issueIds
+        success = app.issue_store.increment_issues(data["issueIds"], data.get("userId"))
+        if not success:
+            return jsonify({"error": "Failed to  increment - duplicate user or invalid data"}), 400
 
-        # Placeholder response (replace with real implementation)
         return jsonify({
             "success": True,
             "message": "Issue counts updated successfully",
@@ -219,6 +214,7 @@ def create_app():
         # You need to:
         # 1. Reset your data store to initial demo values
         # 2. Return a success response
+        app.issue_store.reset_to_demo_data()
 
         # Placeholder response (replace with real implementation)
         return jsonify({

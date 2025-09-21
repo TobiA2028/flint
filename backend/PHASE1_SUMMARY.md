@@ -92,6 +92,10 @@ curl -X POST http://localhost:5000/api/issues/increment \
   -H "Content-Type: application/json" \
   -d '{"issueIds": ["housing", "education"]}'
 
+curl -X http://127.0.0.1:5000/api/issues/increment \
+  -H "Content-Type: application/json" \
+  -d '{"issueIds": ["housing", "education"]}'
+
 # Reset data
 curl -X POST http://localhost:5000/api/issues/reset
 ```
