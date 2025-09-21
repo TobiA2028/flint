@@ -505,14 +505,23 @@ def create_app():
         """
         log_request('/api/candidates', 'GET', request.args.to_dict())
 
-        # Extract issues filter from query parameters
+        # Extract filters from query parameters
         issues_param = request.args.get('issues', '')
-        if issues_param:
-            # Parse comma-separated issue IDs
+        offices_param = request.args.get('offices', '')
+
+        # Prioritize office filtering since that's the primary use case for CandidatesScreen
+        if offices_param:
+            # Parse comma-separated office IDs
+            selected_offices = [office.strip() for office in offices_param.split(',') if office.strip()]
+            # Get candidates running for any of the specified offices
+            candidates = app.issue_store.get_candidates_by_offices(selected_offices)
+            filtered_by = {"offices": selected_offices}
+        elif issues_param:
+            # Parse comma-separated issue IDs (legacy behavior)
             selected_issues = [issue.strip() for issue in issues_param.split(',') if issue.strip()]
             # Get candidates relevant to any of the selected issues
             candidates = app.issue_store.get_candidates_by_issues(selected_issues)
-            filtered_by = selected_issues
+            filtered_by = {"issues": selected_issues}
         else:
             # Return all candidates if no filter specified
             candidates = app.issue_store.get_all_candidates()
@@ -521,7 +530,7 @@ def create_app():
         return jsonify({
             "candidates": candidates,
             "total_candidates": len(candidates),
-            "filtered_by_issues": filtered_by,
+            "filtered_by": filtered_by,
             "timestamp": datetime.now().isoformat()
         })
 
@@ -780,7 +789,8 @@ def create_app():
                 "success": False,
                 "error": f"Server error: {str(e)}"
             }), 500
-
+        
+    
     # ========================================================================
     # TESTING AND DEBUG ENDPOINTS
     # ========================================================================

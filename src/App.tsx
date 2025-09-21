@@ -35,7 +35,9 @@ const App = () => {
     resetState,
     // New issue management functions
     loadIssues,
-    refreshIssues
+    refreshIssues,
+    // Office tracking functions
+    updateDisplayedOffices
   } = useAppState();
 
   const handleNextStep = () => {
@@ -174,6 +176,7 @@ const App = () => {
             selectedIssues={state.userProfile.selectedIssues}
             onContinue={handleNextStep}
             issues={state.issues}
+            updateDisplayedOffices={updateDisplayedOffices}
           />
         );
       
@@ -181,6 +184,7 @@ const App = () => {
         return (
           <CandidatesScreen
             selectedIssues={state.userProfile.selectedIssues}
+            displayedOffices={state.displayedOffices}
             starredCandidates={state.starredCandidates}
             starredMeasures={state.starredMeasures}
             onToggleStarredCandidate={toggleStarredCandidate}

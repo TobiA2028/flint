@@ -160,6 +160,8 @@ export interface AppState {
   issues: Issue[];
   issuesLoading: boolean;
   issuesError: string | null;
+  // Office tracking for candidates display
+  displayedOffices: string[];
   // Email and readiness response tracking
   userEmail: string;
   emailOptIn: boolean;

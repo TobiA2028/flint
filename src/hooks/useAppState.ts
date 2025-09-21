@@ -20,6 +20,8 @@ const initialState: AppState = {
   issues: [],
   issuesLoading: false,
   issuesError: null,
+  // Office tracking for candidates display
+  displayedOffices: [],
   // Email and readiness response tracking
   userEmail: '',
   emailOptIn: false,
@@ -198,6 +200,10 @@ export const useAppState = () => {
     setState(prev => ({ ...prev, readinessResponse: response }));
   };
 
+  const updateDisplayedOffices = (officeIds: string[]) => {
+    setState(prev => ({ ...prev, displayedOffices: officeIds }));
+  };
+
   return {
     state,
     updateUserProfile,
@@ -211,6 +217,8 @@ export const useAppState = () => {
     loadIssues,
     refreshIssues,
     ensureIssuesLoaded,
+    // Office tracking functions
+    updateDisplayedOffices,
     // Email and readiness response functions
     setUserEmail,
     setEmailOptIn,

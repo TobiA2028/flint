@@ -14,6 +14,8 @@ interface OfficeMappingScreenProps {
   onContinue: () => void;
   // Issues prop for backend-driven data and issue context
   issues: Issue[];
+  // Function to update displayed offices in app state
+  updateDisplayedOffices: (officeIds: string[]) => void;
 }
 
 /**
@@ -35,7 +37,7 @@ interface OfficeMappingScreenProps {
  * - Error boundaries could provide better error handling
  */
 
-export const OfficeMappingScreen = ({ selectedIssues, onContinue, issues }: OfficeMappingScreenProps) => {
+export const OfficeMappingScreen = ({ selectedIssues, onContinue, issues, updateDisplayedOffices }: OfficeMappingScreenProps) => {
   // ============================================================================
   // STATE MANAGEMENT - Backend data and loading states
   // ============================================================================
@@ -83,7 +85,11 @@ export const OfficeMappingScreen = ({ selectedIssues, onContinue, issues }: Offi
             const response = await apiClient.getOffices(selectedIssues);
             if (response.success) {
               setOffices(response.data.offices);
+              // Update app state with office IDs for candidates screen
+              const officeIds = response.data.offices.map(office => office.id);
+              updateDisplayedOffices(officeIds);
               console.log('✅ Fetched offices:', response.data.offices.length);
+              console.log('✅ Updated displayed offices:', officeIds);
             } else {
               console.error('❌ Failed to fetch offices:', response.error);
               setError(`Failed to load offices: ${response.error}`);

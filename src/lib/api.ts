@@ -522,36 +522,37 @@ export class ApiClient {
   }
 
   /**
-   * Get candidates filtered by user's selected issues
+   * Get candidates filtered by office IDs or issue IDs
    *
    * FRONTEND INTEGRATION:
    * ====================
    * This method replaces hardcoded candidate data in CandidatesScreen.tsx,
-   * enabling dynamic candidate filtering based on user issue preferences.
+   * enabling dynamic candidate filtering based on offices or issues.
    *
    * QUERY FILTERING:
    * ===============
-   * Candidates are filtered based on issue relevance through two pathways:
-   * 1. Direct Issue Alignment: Candidates whose platform addresses the selected issues
-   * 2. Office-Based Relevance: Candidates running for offices that handle the selected issues
+   * Candidates can be filtered by:
+   * 1. Office IDs: Direct filtering - candidates running for specific offices
+   * 2. Issue IDs: Indirect filtering - candidates relevant to specific issues
    *
    * Usage in components:
    * ```typescript
    * const api = new ApiClient();
-   * const response = await api.getCandidates(['housing', 'environment']);
-   * if (response.success) {
-   *   console.log('Relevant candidates:', response.data.candidates);
-   * }
+   * // Filter by offices (preferred for CandidatesScreen)
+   * const response = await api.getCandidates({ officeIds: ['city-council', 'mayor'] });
+   * // Filter by issues (legacy support)
+   * const response = await api.getCandidates({ issueIds: ['housing', 'environment'] });
    * ```
    */
-  async getCandidates(issueIds?: string[]): Promise<ApiResponse<import('@/types').CandidatesResponse>> {
+  async getCandidates(filters?: { officeIds?: string[]; issueIds?: string[] }): Promise<ApiResponse<import('@/types').CandidatesResponse>> {
     try {
-      console.log('🔄 Fetching candidates from backend...', { issueIds });
+      console.log('🔄 Fetching candidates from backend...', filters);
 
-      // Build URL with optional issue filtering
+      // Build URL with optional filtering
       const url = new URL(`${this.baseUrl}/api/candidates`);
-      if (issueIds && issueIds.length > 0) {
-        url.searchParams.set('issues', issueIds.join(','));
+
+      if (filters?.officeIds && filters.officeIds.length > 0) {
+        url.searchParams.set('offices', filters.officeIds.join(','));
       }
 
       const response = await fetchWithTimeout(url.toString());
@@ -564,7 +565,7 @@ export class ApiClient {
 
       console.log('✅ Successfully fetched candidates:', {
         count: data.candidates.length,
-        filtered_by: data.filtered_by_issues,
+        filtered_by: data.filtered_by,
         timestamp: data.timestamp
       });
 
@@ -883,14 +884,14 @@ export class SupabaseApiClient {
         const subscription = typedSupabase
           .channel('issues_changes')
           .on('postgres_changes',
-              { event: '*', schema: 'public', table: 'issues' },
-              (payload) => {
-                console.log('📡 Real-time issue update:', payload);
-                // Re-fetch all issues on any change
-                this.getIssuesRealtime().then(({ data }) => {
-                  if (data) callback(data);
-                });
-              }
+            { event: '*', schema: 'public', table: 'issues' },
+            (payload) => {
+              console.log('📡 Real-time issue update:', payload);
+              // Re-fetch all issues on any change
+              this.getIssuesRealtime().then(({ data }) => {
+                if (data) callback(data);
+              });
+            }
           )
           .subscribe();
 

@@ -11,6 +11,7 @@ import { apiClient } from '@/lib/api';
 
 interface CandidatesScreenProps {
   selectedIssues: string[];
+  displayedOffices: string[];
   starredCandidates: string[];
   starredMeasures: string[];
   onToggleStarredCandidate: (candidateId: string) => void;
@@ -23,18 +24,18 @@ interface CandidatesScreenProps {
  * BACKEND INTEGRATION APPROACH FOR CANDIDATES SCREEN:
  * ===================================================
  * This component now fetches candidates and ballot measures from the backend
- * based on the user's selected issues, providing personalized civic content.
+ * based on the offices displayed in OfficeMappingScreen, providing personalized civic content.
  *
  * DATA FETCHING STRATEGY:
  * ======================
- * 1. Fetch candidates whose platforms align with selected issues
+ * 1. Fetch candidates running for offices shown in OfficeMappingScreen
  * 2. Fetch ballot measures that address selected issues
  * 3. Update candidate relevance indicators based on issue matching
  * 4. Maintain starring functionality with frontend state
  *
  * PERFORMANCE CONSIDERATIONS:
  * ==========================
- * - API calls are triggered only when selectedIssues change
+ * - API calls are triggered only when displayedOffices change
  * - Loading states provide immediate user feedback
  * - Error handling ensures graceful degradation
  * - Could be optimized with React Query for caching and background updates
@@ -42,6 +43,7 @@ interface CandidatesScreenProps {
 
 export const CandidatesScreen = ({
   selectedIssues,
+  displayedOffices,
   starredCandidates,
   starredMeasures,
   onToggleStarredCandidate,
@@ -69,31 +71,35 @@ export const CandidatesScreen = ({
 
   useEffect(() => {
     const fetchCandidatesData = async () => {
-      if (selectedIssues.length === 0) {
-        // No issues selected, clear data
+      if (displayedOffices.length === 0) {
+        // No offices displayed, clear candidate data but still fetch ballot measures
         setCandidates([]);
-        setBallotMeasures([]);
-        return;
+        // Don't return here - still fetch ballot measures based on selectedIssues
       }
 
-      console.log('🔄 CandidatesScreen: Fetching civic data for issues:', selectedIssues);
+      console.log('🔄 CandidatesScreen: Fetching civic data for offices:', displayedOffices, 'and issues:', selectedIssues);
 
       // Reset error state
       setError(null);
 
       // Fetch candidates and ballot measures in parallel
       const fetchPromises = [
-        // Fetch candidates relevant to selected issues
+        // Fetch candidates running for displayed offices
         (async () => {
           setIsLoadingCandidates(true);
           try {
-            const response = await apiClient.getCandidates(selectedIssues);
-            if (response.success) {
-              setCandidates(response.data.candidates);
-              console.log('✅ Fetched candidates:', response.data.candidates.length);
+            if (displayedOffices.length > 0) {
+              const response = await apiClient.getCandidates({ officeIds: displayedOffices });
+              if (response.success) {
+                setCandidates(response.data.candidates);
+                console.log('✅ Fetched candidates:', response.data.candidates.length);
+              } else {
+                console.error('❌ Failed to fetch candidates:', response.error);
+                setError(`Failed to load candidates: ${response.error}`);
+              }
             } else {
-              console.error('❌ Failed to fetch candidates:', response.error);
-              setError(`Failed to load candidates: ${response.error}`);
+              // No offices to fetch candidates for
+              setCandidates([]);
             }
           } catch (err) {
             console.error('❌ Candidates fetch error:', err);
@@ -129,7 +135,7 @@ export const CandidatesScreen = ({
     };
 
     fetchCandidatesData();
-  }, [selectedIssues]); // Re-fetch when selectedIssues change
+  }, [displayedOffices, selectedIssues]); // Re-fetch when displayedOffices or selectedIssues change
 
   // ============================================================================
   // OPTIMIZED DATA ORGANIZATION - Performance-enhanced lookups

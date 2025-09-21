@@ -256,7 +256,8 @@ def seed_data_via_client(supabase: Client):
                     "Experienced in housing and public administration",
                 ],
                 "office_id": "city-council",
-                "related_issues": ["housing", "public-safety"],
+                "related_issues": ["housing"
+                , "public-safety"],
             },
             {
                 "id": "candidate-2",

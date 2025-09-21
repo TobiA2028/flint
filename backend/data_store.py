@@ -719,6 +719,48 @@ class IssueDataStore:
 
         return relevant_candidates
 
+    def get_candidates_by_offices(self, office_ids: List[str]) -> List[Dict[str, Any]]:
+        """
+        Get all candidates running for any of the specified offices.
+
+        QUERY STRATEGY:
+        ==============
+        This method directly filters candidates by their office_id field,
+        returning candidates who are running for any of the specified offices.
+
+        Args:
+            office_ids (List[str]): List of office IDs to find candidates for
+
+        Returns:
+            List[Dict[str, Any]]: Complete candidate objects running for the specified offices
+
+        Example:
+            get_candidates_by_offices(['city-council', 'mayor'])
+            → [
+                {
+                    "id": "candidate-1",
+                    "name": "Sarah Chen",
+                    "party": "Democratic",
+                    "office_id": "city-council",
+                    ...
+                },
+                ...
+            ]
+        """
+        if not office_ids:
+            return []
+
+        relevant_candidates = []
+
+        for candidate_id, candidate_data in self.candidates.items():
+            candidate_office_id = candidate_data.get('office_id')
+
+            # Check if candidate is running for any of the specified offices
+            if candidate_office_id and candidate_office_id in office_ids:
+                relevant_candidates.append(candidate_data)
+
+        return relevant_candidates
+
     def get_frequencies(self) -> Dict[str, int]:
         """
         Get current frequency counts for all issues.

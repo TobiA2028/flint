@@ -386,6 +386,33 @@ class SupabaseDataStore:
             print(f"❌ Error retrieving candidates by issues: {e}")
             return []
 
+    def get_candidates_by_offices(self, office_ids: List[str]) -> List[Dict[str, Any]]:
+        """
+        Get all candidates running for any of the specified offices.
+
+        Args:
+            office_ids (List[str]): List of office IDs to find candidates for
+
+        Returns:
+            List[Dict[str, Any]]: Complete candidate objects running for the specified offices
+        """
+        try:
+            if not office_ids:
+                return []
+
+            # Get candidates directly by their office_id
+            candidates_result = self.supabase.table('candidates').select('*').filter(
+                'office_id', 'in', office_ids
+            ).execute()
+
+            candidates = candidates_result.data
+            print(f"👥 Found {len(candidates)} candidates for offices: {office_ids}")
+            return candidates
+
+        except Exception as e:
+            print(f"❌ Error retrieving candidates by offices: {e}")
+            return []
+
     # ============================================================================
     # DATA MANAGEMENT METHODS
     # ============================================================================
