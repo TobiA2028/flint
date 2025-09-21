@@ -268,7 +268,321 @@ def create_app():
         # Placeholder response (replace with real implementation)
         return jsonify({
             "success": True,
-            "message": "All issue counts have been reset to demo values"
+            "message": "All civic data has been reset to demo values"
+        })
+
+    # ========================================================================
+    # NEW CIVIC ENTITY ENDPOINTS - Offices, Ballot Measures, Candidates
+    # ========================================================================
+
+    @app.route('/api/offices', methods=['GET'])
+    def get_offices():
+        """
+        Get offices filtered by user's selected issues.
+
+        QUERY PARAMETER FILTERING:
+        =========================
+        This endpoint supports filtering offices by the issues a user has selected:
+        - ?issues=housing,education → Returns offices that handle housing OR education
+        - No issues parameter → Returns all available offices
+
+        FRONTEND INTEGRATION:
+        ====================
+        This endpoint replaces the hardcoded office mapping logic in OfficeMappingScreen.tsx.
+        The frontend can now get dynamically filtered office data based on user selections.
+
+        Query Parameters:
+            issues (optional): Comma-separated list of issue IDs to filter by
+
+        Returns:
+            JSON: Array of office objects relevant to the specified issues
+
+        Example requests:
+            GET /api/offices?issues=housing,education
+            GET /api/offices (all offices)
+
+        Example response:
+        {
+            "offices": [
+                {
+                    "id": "city-council",
+                    "name": "City Council",
+                    "description": "District Representative",
+                    "explanation": "City Council members vote on zoning laws...",
+                    "level": "local",
+                    "related_issues": ["housing"]
+                },
+                {
+                    "id": "school-board",
+                    "name": "School Board",
+                    "description": "District Trustee",
+                    "explanation": "School Board members decide on curriculum...",
+                    "level": "local",
+                    "related_issues": ["education"]
+                }
+            ],
+            "total_offices": 2,
+            "filtered_by_issues": ["housing", "education"],
+            "timestamp": "2025-01-20T10:30:00Z"
+        }
+        """
+        log_request('/api/offices', 'GET', request.args.to_dict())
+
+        # Extract issues filter from query parameters
+        issues_param = request.args.get('issues', '')
+        if issues_param:
+            # Parse comma-separated issue IDs
+            selected_issues = [issue.strip() for issue in issues_param.split(',') if issue.strip()]
+            # Get offices that handle any of the selected issues
+            offices = app.issue_store.get_offices_by_issues(selected_issues)
+            filtered_by = selected_issues
+        else:
+            # Return all offices if no filter specified
+            offices = list(app.issue_store.offices.values())
+            filtered_by = None
+
+        return jsonify({
+            "offices": offices,
+            "total_offices": len(offices),
+            "filtered_by_issues": filtered_by,
+            "timestamp": datetime.now().isoformat()
+        })
+
+    @app.route('/api/ballot-measures', methods=['GET'])
+    def get_ballot_measures():
+        """
+        Get ballot measures filtered by user's selected issues.
+
+        QUERY PARAMETER FILTERING:
+        =========================
+        Similar to the offices endpoint, this supports filtering ballot measures
+        by the issues they address:
+        - ?issues=education,transportation → Returns measures addressing these issues
+        - No issues parameter → Returns all available ballot measures
+
+        FRONTEND INTEGRATION:
+        ====================
+        This endpoint replaces hardcoded ballot measure data in both
+        OfficeMappingScreen.tsx and CandidatesScreen.tsx, providing a single
+        source of truth for ballot measure information.
+
+        Query Parameters:
+            issues (optional): Comma-separated list of issue IDs to filter by
+
+        Returns:
+            JSON: Array of ballot measure objects addressing the specified issues
+
+        Example requests:
+            GET /api/ballot-measures?issues=education,transportation
+            GET /api/ballot-measures (all measures)
+
+        Example response:
+        {
+            "ballot_measures": [
+                {
+                    "id": "measure-edu-1",
+                    "title": "School Bond Initiative - Measure A",
+                    "description": "Authorizes $500 million in bonds...",
+                    "category": "Education",
+                    "impact": "Would increase property taxes...",
+                    "related_issues": ["education"]
+                },
+                {
+                    "id": "measure-trans-1",
+                    "title": "Public Transit Expansion - Measure B",
+                    "description": "Funds the extension of light rail...",
+                    "category": "Transportation",
+                    "impact": "Would provide improved transit access...",
+                    "related_issues": ["transportation"]
+                }
+            ],
+            "total_measures": 2,
+            "filtered_by_issues": ["education", "transportation"],
+            "timestamp": "2025-01-20T10:30:00Z"
+        }
+        """
+        log_request('/api/ballot-measures', 'GET', request.args.to_dict())
+
+        # Extract issues filter from query parameters
+        issues_param = request.args.get('issues', '')
+        if issues_param:
+            # Parse comma-separated issue IDs
+            selected_issues = [issue.strip() for issue in issues_param.split(',') if issue.strip()]
+            # Get ballot measures that address any of the selected issues
+            ballot_measures = app.issue_store.get_ballot_measures_by_issues(selected_issues)
+            filtered_by = selected_issues
+        else:
+            # Return all ballot measures if no filter specified
+            ballot_measures = list(app.issue_store.ballot_measures.values())
+            filtered_by = None
+
+        return jsonify({
+            "ballot_measures": ballot_measures,
+            "total_measures": len(ballot_measures),
+            "filtered_by_issues": filtered_by,
+            "timestamp": datetime.now().isoformat()
+        })
+
+    @app.route('/api/candidates', methods=['GET'])
+    def get_candidates():
+        """
+        Get candidates filtered by user's selected issues.
+
+        QUERY PARAMETER FILTERING:
+        =========================
+        This endpoint filters candidates based on issue relevance through two pathways:
+        1. **Direct Issue Alignment**: Candidates whose platform addresses the selected issues
+        2. **Office-Based Relevance**: Candidates running for offices that handle the selected issues
+
+        FRONTEND INTEGRATION:
+        ====================
+        This endpoint replaces hardcoded candidate data in CandidatesScreen.tsx,
+        enabling dynamic candidate filtering based on user issue preferences.
+
+        Query Parameters:
+            issues (optional): Comma-separated list of issue IDs to filter by
+
+        Returns:
+            JSON: Array of candidate objects relevant to the specified issues
+
+        Example requests:
+            GET /api/candidates?issues=housing,environment
+            GET /api/candidates (all candidates)
+
+        Example response:
+        {
+            "candidates": [
+                {
+                    "id": "candidate-1",
+                    "name": "Sarah Chen",
+                    "party": "Democratic",
+                    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=sarah",
+                    "positions": [
+                        "Supports affordable housing initiatives...",
+                        "Champions climate action..."
+                    ],
+                    "office_id": "city-council",
+                    "related_issues": ["housing", "education", "environment"]
+                },
+                {
+                    "id": "candidate-3",
+                    "name": "Elena Rodriguez",
+                    "party": "Independent",
+                    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=elena",
+                    "positions": [
+                        "Supports sustainable transportation..."
+                    ],
+                    "office_id": "mayor",
+                    "related_issues": ["transportation", "infrastructure", "rights"]
+                }
+            ],
+            "total_candidates": 2,
+            "filtered_by_issues": ["housing", "environment"],
+            "timestamp": "2025-01-20T10:30:00Z"
+        }
+        """
+        log_request('/api/candidates', 'GET', request.args.to_dict())
+
+        # Extract issues filter from query parameters
+        issues_param = request.args.get('issues', '')
+        if issues_param:
+            # Parse comma-separated issue IDs
+            selected_issues = [issue.strip() for issue in issues_param.split(',') if issue.strip()]
+            # Get candidates relevant to any of the selected issues
+            candidates = app.issue_store.get_candidates_by_issues(selected_issues)
+            filtered_by = selected_issues
+        else:
+            # Return all candidates if no filter specified
+            candidates = list(app.issue_store.candidates.values())
+            filtered_by = None
+
+        return jsonify({
+            "candidates": candidates,
+            "total_candidates": len(candidates),
+            "filtered_by_issues": filtered_by,
+            "timestamp": datetime.now().isoformat()
+        })
+
+    # ========================================================================
+    # COMPREHENSIVE CIVIC DATA ENDPOINT - All entities in one call
+    # ========================================================================
+
+    @app.route('/api/civic-data', methods=['GET'])
+    def get_civic_data():
+        """
+        Get all civic data (issues, offices, ballot measures, candidates) in a single request.
+
+        COMPREHENSIVE DATA ENDPOINT:
+        ===========================
+        This endpoint provides all civic data in one API call, with optional filtering
+        by selected issues. This is useful for:
+        1. Initial app loading (get everything at once)
+        2. Reducing API calls for screens that need multiple entity types
+        3. Ensuring data consistency across all entities
+
+        QUERY PARAMETER FILTERING:
+        =========================
+        When issues are specified, all entities are filtered by relevance:
+        - Issues: Always included (needed for relationships)
+        - Offices: Filtered to those handling the specified issues
+        - Ballot Measures: Filtered to those addressing the specified issues
+        - Candidates: Filtered to those relevant to the specified issues
+
+        Query Parameters:
+            issues (optional): Comma-separated list of issue IDs to filter by
+
+        Returns:
+            JSON: Complete civic dataset with optional filtering
+
+        Example requests:
+            GET /api/civic-data?issues=housing,education
+            GET /api/civic-data (all data)
+
+        Example response:
+        {
+            "issues": [...],
+            "offices": [...],
+            "ballot_measures": [...],
+            "candidates": [...],
+            "total_users": 1200,
+            "filtered_by_issues": ["housing", "education"],
+            "timestamp": "2025-01-20T10:30:00Z"
+        }
+        """
+        log_request('/api/civic-data', 'GET', request.args.to_dict())
+
+        # Extract issues filter from query parameters
+        issues_param = request.args.get('issues', '')
+
+        # Always include all issues (needed for relationships and display)
+        issues = app.issue_store.get_all_issues()
+
+        if issues_param:
+            # Parse comma-separated issue IDs for filtering
+            selected_issues = [issue.strip() for issue in issues_param.split(',') if issue.strip()]
+
+            # Filter all entity types by the selected issues
+            offices = app.issue_store.get_offices_by_issues(selected_issues)
+            ballot_measures = app.issue_store.get_ballot_measures_by_issues(selected_issues)
+            candidates = app.issue_store.get_candidates_by_issues(selected_issues)
+            filtered_by = selected_issues
+        else:
+            # Return all data if no filter specified
+            offices = list(app.issue_store.offices.values())
+            ballot_measures = list(app.issue_store.ballot_measures.values())
+            candidates = list(app.issue_store.candidates.values())
+            filtered_by = None
+
+        total_users = app.issue_store.get_total_users()
+
+        return jsonify({
+            "issues": issues,
+            "offices": offices,
+            "ballot_measures": ballot_measures,
+            "candidates": candidates,
+            "total_users": total_users,
+            "filtered_by_issues": filtered_by,
+            "timestamp": datetime.now().isoformat()
         })
 
     # ========================================================================

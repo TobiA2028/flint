@@ -382,6 +382,293 @@ export class ApiClient {
     }
   }
 
+  // ============================================================================
+  // NEW CIVIC ENTITY ENDPOINTS - Offices, Ballot Measures, Candidates
+  // ============================================================================
+
+  /**
+   * Get offices filtered by user's selected issues
+   *
+   * FRONTEND INTEGRATION:
+   * ====================
+   * This method replaces the hardcoded office mapping logic in OfficeMappingScreen.tsx.
+   * The frontend can now get dynamically filtered office data based on user selections.
+   *
+   * QUERY FILTERING:
+   * ===============
+   * - Pass issueIds to get only offices that handle those issues
+   * - Pass empty array or undefined to get all offices
+   *
+   * Usage in components:
+   * ```typescript
+   * const api = new ApiClient();
+   * const response = await api.getOffices(['housing', 'education']);
+   * if (response.success) {
+   *   console.log('Relevant offices:', response.data.offices);
+   * }
+   * ```
+   */
+  async getOffices(issueIds?: string[]): Promise<ApiResponse<import('@/types').OfficesResponse>> {
+    try {
+      console.log('🔄 Fetching offices from backend...', { issueIds });
+
+      // Build URL with optional issue filtering
+      const url = new URL(`${this.baseUrl}/api/offices`);
+      if (issueIds && issueIds.length > 0) {
+        url.searchParams.set('issues', issueIds.join(','));
+      }
+
+      const response = await fetchWithTimeout(url.toString());
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('✅ Successfully fetched offices:', {
+        count: data.offices.length,
+        filtered_by: data.filtered_by_issues,
+        timestamp: data.timestamp
+      });
+
+      return {
+        data,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ Failed to fetch offices:', error);
+
+      return {
+        data: {
+          offices: [],
+          total_offices: 0,
+          filtered_by_issues: null,
+          timestamp: new Date().toISOString()
+        },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Get ballot measures filtered by user's selected issues
+   *
+   * FRONTEND INTEGRATION:
+   * ====================
+   * This method replaces hardcoded ballot measure data in both
+   * OfficeMappingScreen.tsx and CandidatesScreen.tsx, providing a single
+   * source of truth for ballot measure information.
+   *
+   * QUERY FILTERING:
+   * ===============
+   * - Pass issueIds to get only measures that address those issues
+   * - Pass empty array or undefined to get all ballot measures
+   *
+   * Usage in components:
+   * ```typescript
+   * const api = new ApiClient();
+   * const response = await api.getBallotMeasures(['education', 'transportation']);
+   * if (response.success) {
+   *   console.log('Relevant ballot measures:', response.data.ballot_measures);
+   * }
+   * ```
+   */
+  async getBallotMeasures(issueIds?: string[]): Promise<ApiResponse<import('@/types').BallotMeasuresResponse>> {
+    try {
+      console.log('🔄 Fetching ballot measures from backend...', { issueIds });
+
+      // Build URL with optional issue filtering
+      const url = new URL(`${this.baseUrl}/api/ballot-measures`);
+      if (issueIds && issueIds.length > 0) {
+        url.searchParams.set('issues', issueIds.join(','));
+      }
+
+      const response = await fetchWithTimeout(url.toString());
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('✅ Successfully fetched ballot measures:', {
+        count: data.ballot_measures.length,
+        filtered_by: data.filtered_by_issues,
+        timestamp: data.timestamp
+      });
+
+      return {
+        data,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ Failed to fetch ballot measures:', error);
+
+      return {
+        data: {
+          ballot_measures: [],
+          total_measures: 0,
+          filtered_by_issues: null,
+          timestamp: new Date().toISOString()
+        },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Get candidates filtered by user's selected issues
+   *
+   * FRONTEND INTEGRATION:
+   * ====================
+   * This method replaces hardcoded candidate data in CandidatesScreen.tsx,
+   * enabling dynamic candidate filtering based on user issue preferences.
+   *
+   * QUERY FILTERING:
+   * ===============
+   * Candidates are filtered based on issue relevance through two pathways:
+   * 1. Direct Issue Alignment: Candidates whose platform addresses the selected issues
+   * 2. Office-Based Relevance: Candidates running for offices that handle the selected issues
+   *
+   * Usage in components:
+   * ```typescript
+   * const api = new ApiClient();
+   * const response = await api.getCandidates(['housing', 'environment']);
+   * if (response.success) {
+   *   console.log('Relevant candidates:', response.data.candidates);
+   * }
+   * ```
+   */
+  async getCandidates(issueIds?: string[]): Promise<ApiResponse<import('@/types').CandidatesResponse>> {
+    try {
+      console.log('🔄 Fetching candidates from backend...', { issueIds });
+
+      // Build URL with optional issue filtering
+      const url = new URL(`${this.baseUrl}/api/candidates`);
+      if (issueIds && issueIds.length > 0) {
+        url.searchParams.set('issues', issueIds.join(','));
+      }
+
+      const response = await fetchWithTimeout(url.toString());
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('✅ Successfully fetched candidates:', {
+        count: data.candidates.length,
+        filtered_by: data.filtered_by_issues,
+        timestamp: data.timestamp
+      });
+
+      return {
+        data,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ Failed to fetch candidates:', error);
+
+      return {
+        data: {
+          candidates: [],
+          total_candidates: 0,
+          filtered_by_issues: null,
+          timestamp: new Date().toISOString()
+        },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Get all civic data (issues, offices, ballot measures, candidates) in a single request
+   *
+   * COMPREHENSIVE DATA ENDPOINT:
+   * ===========================
+   * This method provides all civic data in one API call, with optional filtering
+   * by selected issues. This is useful for:
+   * 1. Initial app loading (get everything at once)
+   * 2. Reducing API calls for screens that need multiple entity types
+   * 3. Ensuring data consistency across all entities
+   *
+   * PERFORMANCE BENEFITS:
+   * ====================
+   * - Reduces network roundtrips from 4 separate calls to 1
+   * - Ensures all data is from the same moment in time
+   * - Simplifies loading state management
+   * - Reduces backend load
+   *
+   * Usage in components:
+   * ```typescript
+   * const api = new ApiClient();
+   * const response = await api.getCivicData(['housing', 'education']);
+   * if (response.success) {
+   *   console.log('All civic data:', response.data);
+   *   // Access: data.issues, data.offices, data.ballot_measures, data.candidates
+   * }
+   * ```
+   */
+  async getCivicData(issueIds?: string[]): Promise<ApiResponse<import('@/types').CivicDataResponse>> {
+    try {
+      console.log('🔄 Fetching comprehensive civic data from backend...', { issueIds });
+
+      // Build URL with optional issue filtering
+      const url = new URL(`${this.baseUrl}/api/civic-data`);
+      if (issueIds && issueIds.length > 0) {
+        url.searchParams.set('issues', issueIds.join(','));
+      }
+
+      const response = await fetchWithTimeout(url.toString());
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('✅ Successfully fetched comprehensive civic data:', {
+        issues: data.issues.length,
+        offices: data.offices.length,
+        ballot_measures: data.ballot_measures.length,
+        candidates: data.candidates.length,
+        total_users: data.total_users,
+        filtered_by: data.filtered_by_issues,
+        timestamp: data.timestamp
+      });
+
+      return {
+        data,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ Failed to fetch comprehensive civic data:', error);
+
+      return {
+        data: {
+          issues: [],
+          offices: [],
+          ballot_measures: [],
+          candidates: [],
+          total_users: 0,
+          filtered_by_issues: null,
+          timestamp: new Date().toISOString()
+        },
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  }
+
   /**
    * Test backend connectivity
    *
