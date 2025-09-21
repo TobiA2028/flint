@@ -165,6 +165,7 @@ const App = () => {
             starredCandidates={state.starredCandidates}
             starredMeasures={state.starredMeasures}
             zipCode={state.userProfile.zipCode}
+            selectedIssues={state.userProfile.selectedIssues}
             onContinue={handleNextStep}
             onRestart={handleRestartApp}
           />
