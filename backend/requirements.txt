@@ -1,0 +1,18 @@
+# Flask Backend Dependencies for Flint Spark Civic Engagement App
+
+# Core Flask framework
+Flask==3.0.0
+
+# CORS (Cross-Origin Resource Sharing) support for React frontend
+# This allows your React app (port 8080) to communicate with Flask (port 5000)
+Flask-CORS==4.0.0
+
+# Development server with auto-reload (optional but helpful)
+# Automatically restarts server when you make code changes
+python-dotenv==1.0.0
+
+# For future JSON validation (optional for Phase 2)
+# marshmallow==3.20.2
+
+# For development and debugging (optional)
+# flask-debugtoolbar==0.15.1

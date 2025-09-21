@@ -3,6 +3,7 @@ export interface Issue {
   name: string;
   icon: string;
   description: string;
+  count: number;
 }
 
 export interface UserProfile {
