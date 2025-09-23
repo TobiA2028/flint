@@ -5,38 +5,72 @@ import { Badge } from '@/components/ui/badge';
 import { EmailPreview } from '@/components/EmailPreview';
 import { EmailTest } from '@/components/EmailTest';
 import { Database, Mail, RefreshCw, Eye, Users } from 'lucide-react';
-import { apiClient } from '@/lib/api';
+import { Candidate, BallotMeasure } from '@/types';
 
 interface DebugScreenProps {
   onBack: () => void;
 }
 
+interface UserCompletion {
+  id: string;
+  user_profile: {
+    email?: string;
+    selectedIssues?: string[];
+    zipCode?: string;
+    ageGroup?: string;
+    communityRole?: string[];
+  };
+  starred_candidates?: string[];
+  starred_measures?: string[];
+  readiness_response: string;
+  completed_at: string;
+  stored_at: string;
+}
+
+interface EmailSignup {
+  email: string;
+  source: string;
+  wants_updates: boolean;
+  timestamp: string;
+}
+
+interface ReadinessStats {
+  yes?: number;
+  no?: number;
+  'still-thinking'?: number;
+}
+
 export const DebugScreen = ({ onBack }: DebugScreenProps) => {
-  const [emails, setEmails] = useState<any[]>([]);
-  const [completions, setCompletions] = useState<any[]>([]);
-  const [readinessStats, setReadinessStats] = useState<any>({});
+  const [emails, setEmails] = useState<EmailSignup[]>([]);
+  const [completions, setCompletions] = useState<UserCompletion[]>([]);
+  const [readinessStats, setReadinessStats] = useState<ReadinessStats>({});
   const [loading, setLoading] = useState(false);
-  const [selectedCompletion, setSelectedCompletion] = useState<any>(null);
+  const [selectedCompletion, setSelectedCompletion] = useState<UserCompletion | null>(null);
+  const [selectedCandidates, setSelectedCandidates] = useState<Candidate[]>([]);
+  const [selectedMeasures, setSelectedMeasures] = useState<BallotMeasure[]>([]);
+  const [loadingPreviewData, setLoadingPreviewData] = useState(false);
 
   const fetchDebugData = async () => {
     setLoading(true);
     try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+
       // Fetch stored emails
-      const emailResponse = await fetch('http://localhost:5001/api/debug/emails');
+      const emailResponse = await fetch(`${API_BASE_URL}/api/debug/emails`);
       if (emailResponse.ok) {
         const emailData = await emailResponse.json();
         setEmails(emailData.emails || []);
       }
 
       // Fetch user completions
-      const completionResponse = await fetch('http://localhost:5001/api/debug/completions');
+      const completionResponse = await fetch(`${API_BASE_URL}/api/debug/completions`);
       if (completionResponse.ok) {
         const completionData = await completionResponse.json();
         setCompletions(completionData.completions || []);
       }
 
       // Fetch readiness stats
-      const statsResponse = await fetch('http://localhost:5001/api/readiness-stats');
+      const statsResponse = await fetch(`${API_BASE_URL}/api/readiness-stats`);
       if (statsResponse.ok) {
         const statsData = await statsResponse.json();
         setReadinessStats(statsData.stats || {});
@@ -52,25 +86,48 @@ export const DebugScreen = ({ onBack }: DebugScreenProps) => {
     fetchDebugData();
   }, []);
 
-  const mockCandidatesAndMeasures = {
-    candidates: [
-      {
-        id: 'candidate-1',
-        name: 'Sarah Chen',
-        party: 'Democratic',
-        office_id: 'City Council',
-        positions: ['Supports affordable housing initiatives', 'Advocates for public education funding']
+  const fetchCompletionData = async (completion: UserCompletion) => {
+    setLoadingPreviewData(true);
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+
+      // Fetch all candidates and measures to find the selected ones
+      const [candidatesResponse, measuresResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/candidates`),
+        fetch(`${API_BASE_URL}/api/ballot-measures`)
+      ]);
+
+      let candidates: Candidate[] = [];
+      let measures: BallotMeasure[] = [];
+
+      if (candidatesResponse.ok) {
+        const candidatesData = await candidatesResponse.json();
+        const allCandidates = candidatesData.candidates || [];
+        // Filter candidates to only those that were starred
+        candidates = allCandidates.filter((candidate: Candidate) =>
+          completion.starred_candidates?.includes(candidate.id)
+        );
       }
-    ],
-    measures: [
-      {
-        id: 'measure-1',
-        title: 'School Bond Initiative - Measure A',
-        category: 'Education',
-        description: 'Authorizes $500 million in bonds to modernize school facilities'
+
+      if (measuresResponse.ok) {
+        const measuresData = await measuresResponse.json();
+        const allMeasures = measuresData.ballot_measures || [];
+        // Filter measures to only those that were starred
+        measures = allMeasures.filter((measure: BallotMeasure) =>
+          completion.starred_measures?.includes(measure.id)
+        );
       }
-    ]
+
+      setSelectedCandidates(candidates);
+      setSelectedMeasures(measures);
+    } catch (error) {
+      console.error('Error fetching completion data:', error);
+      setSelectedCandidates([]);
+      setSelectedMeasures([]);
+    }
+    setLoadingPreviewData(false);
   };
+
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -172,12 +229,16 @@ export const DebugScreen = ({ onBack }: DebugScreenProps) => {
                           </div>
                         </div>
                         <CTAButton
-                          onClick={() => setSelectedCompletion(completion)}
+                          onClick={() => {
+                            setSelectedCompletion(completion);
+                            fetchCompletionData(completion);
+                          }}
                           variant="secondary"
                           className="text-xs py-1 px-2 h-auto"
+                          disabled={loadingPreviewData}
                         >
                           <Eye className="w-3 h-3 mr-1" />
-                          Preview Email
+                          {loadingPreviewData ? 'Loading...' : 'Preview Email'}
                         </CTAButton>
                       </div>
                       <div className="text-muted-foreground">
@@ -196,9 +257,14 @@ export const DebugScreen = ({ onBack }: DebugScreenProps) => {
           <div>
             {selectedCompletion ? (
               <EmailPreview
-                userProfile={selectedCompletion.user_profile}
-                starredCandidates={mockCandidatesAndMeasures.candidates}
-                starredMeasures={mockCandidatesAndMeasures.measures}
+                userProfile={{
+                  zipCode: selectedCompletion.user_profile?.zipCode || '',
+                  selectedIssues: selectedCompletion.user_profile?.selectedIssues || [],
+                  ageGroup: selectedCompletion.user_profile?.ageGroup,
+                  communityRole: selectedCompletion.user_profile?.communityRole,
+                }}
+                starredCandidates={selectedCandidates}
+                starredMeasures={selectedMeasures}
                 userEmail={selectedCompletion.user_profile?.email || 'user@example.com'}
               />
             ) : (
@@ -241,7 +307,10 @@ export const DebugScreen = ({ onBack }: DebugScreenProps) => {
                 Open browser console and check network requests to the backend
               </p>
               <CTAButton
-                onClick={() => window.open('http://localhost:5001/api/debug/emails', '_blank')}
+                onClick={() => {
+                  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+                  window.open(`${API_BASE_URL}/api/debug/emails`, '_blank');
+                }}
                 variant="secondary"
                 className="w-full"
               >

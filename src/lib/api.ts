@@ -95,8 +95,8 @@ export interface IncrementIssuesResponse {
  * for different environments (development, production, testing).
  */
 const API_CONFIG = {
-  // Base URL for our Flask backend
-  BASE_URL: 'http://localhost:5001',
+  // Base URL for our Flask backend - use environment variable or fallback to localhost
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001',
 
   // Request timeout in milliseconds
   TIMEOUT: 10000,
