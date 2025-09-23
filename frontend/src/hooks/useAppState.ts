@@ -106,10 +106,18 @@ export const useAppState = () => {
       if (savedState) {
         try {
           const parsed = JSON.parse(savedState);
+          // Check if this is a returning user with meaningful progress
+          const hasProgress = parsed.userProfile?.selectedIssues?.length > 0 ||
+                             parsed.userProfile?.zipCode ||
+                             parsed.starredCandidates?.length > 0 ||
+                             parsed.starredMeasures?.length > 0;
+
           // Merge saved state but always refresh issues from backend
           if (isComponentMounted) {
             setState({
               ...parsed,
+              // Only restore currentStep for users with actual progress
+              currentStep: hasProgress ? parsed.currentStep : 1,
               issues: [], // Reset issues to force fresh load
               issuesLoading: false,
               issuesError: null
