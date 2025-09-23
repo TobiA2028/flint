@@ -41,43 +41,52 @@ When working on tasks in this repository, follow these rules:
 
 ```
 flint-spark-civic/
-├── src/
-│   ├── components/           # Custom React components
-│   │   ├── ui/              # shadcn/ui component library
-│   │   ├── BallotMeasureCard.tsx
-│   │   ├── CTAButton.tsx
-│   │   ├── CandidateCard.tsx
-│   │   ├── IssueCard.tsx
-│   │   ├── MascotGuide.tsx
-│   │   └── ProgressIndicator.tsx
-│   ├── screens/             # Main application screens
-│   │   ├── WelcomeScreen.tsx
-│   │   ├── IssueSelectionScreen.tsx
-│   │   ├── DemographicsScreen.tsx
-│   │   ├── SocialProofScreen.tsx
-│   │   ├── OfficeMappingScreen.tsx
-│   │   ├── CandidatesScreen.tsx
-│   │   └── BallotPreviewScreen.tsx
-│   ├── hooks/               # Custom React hooks
-│   │   ├── useAppState.ts   # Main state management hook
-│   │   ├── use-mobile.tsx
-│   │   └── use-toast.ts
-│   ├── data/                # Static data and configuration
-│   │   └── issues.ts        # Legacy: Moved to backend/Supabase
-│   ├── types/               # TypeScript type definitions
-│   │   └── index.ts
-│   ├── lib/                 # Utility functions and API clients
-│   │   ├── utils.ts
-│   │   ├── api.ts           # Flask API client
-│   │   └── supabase.ts      # Supabase client configuration
-│   ├── pages/               # Route-based pages
-│   │   ├── Index.tsx
-│   │   └── NotFound.tsx
-│   ├── assets/              # Static assets
-│   │   └── flint-mascot.png
-│   ├── App.tsx              # Main application component
-│   ├── main.tsx             # Application entry point
-│   └── index.css            # Global styles
+├── frontend/                # Frontend React application
+│   ├── src/
+│   │   ├── components/           # Custom React components
+│   │   │   ├── ui/              # shadcn/ui component library
+│   │   │   ├── BallotMeasureCard.tsx
+│   │   │   ├── CTAButton.tsx
+│   │   │   ├── CandidateCard.tsx
+│   │   │   ├── IssueCard.tsx
+│   │   │   ├── MascotGuide.tsx
+│   │   │   └── ProgressIndicator.tsx
+│   │   ├── screens/             # Main application screens
+│   │   │   ├── WelcomeScreen.tsx
+│   │   │   ├── IssueSelectionScreen.tsx
+│   │   │   ├── DemographicsScreen.tsx
+│   │   │   ├── SocialProofScreen.tsx
+│   │   │   ├── OfficeMappingScreen.tsx
+│   │   │   ├── CandidatesScreen.tsx
+│   │   │   └── BallotPreviewScreen.tsx
+│   │   ├── hooks/               # Custom React hooks
+│   │   │   ├── useAppState.ts   # Main state management hook
+│   │   │   ├── use-mobile.tsx
+│   │   │   └── use-toast.ts
+│   │   ├── data/                # Static data and configuration
+│   │   │   └── issues.ts        # Legacy: Moved to backend/Supabase
+│   │   ├── types/               # TypeScript type definitions
+│   │   │   └── index.ts
+│   │   ├── lib/                 # Utility functions and API clients
+│   │   │   ├── utils.ts
+│   │   │   ├── api.ts           # Flask API client
+│   │   │   └── supabase.ts      # Supabase client configuration
+│   │   ├── pages/               # Route-based pages
+│   │   │   ├── Index.tsx
+│   │   │   └── NotFound.tsx
+│   │   ├── assets/              # Static assets
+│   │   │   └── flint-mascot.png
+│   │   ├── App.tsx              # Main application component
+│   │   ├── main.tsx             # Application entry point
+│   │   └── index.css            # Global styles
+│   ├── public/                  # Public assets
+│   ├── package.json             # Frontend dependencies and scripts
+│   ├── vite.config.ts           # Vite configuration
+│   ├── tailwind.config.ts       # Tailwind CSS configuration
+│   ├── components.json          # shadcn/ui configuration
+│   ├── eslint.config.js         # ESLint configuration
+│   ├── tsconfig.json            # TypeScript configuration
+│   └── index.html               # HTML entry point
 ├── backend/                 # Flask backend
 │   ├── app.py              # Flask application
 │   ├── config.py           # Configuration management
@@ -105,6 +114,9 @@ flint-spark-civic/
 
 ### Frontend
 ```bash
+# Navigate to frontend directory
+cd frontend
+
 # Start development server (runs on port 8080)
 npm run dev
 
