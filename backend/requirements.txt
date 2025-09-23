@@ -7,6 +7,12 @@ Flask==3.0.0
 # This allows your React app (port 8080) to communicate with Flask (port 5000)
 Flask-CORS==4.0.0
 
+# Production WSGI server
+gunicorn
+
+# Rate limiting for API endpoints
+flask-limiter
+
 # Development server with auto-reload (optional but helpful)
 # Automatically restarts server when you make code changes
 python-dotenv==1.0.0

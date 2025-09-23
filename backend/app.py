@@ -14,7 +14,7 @@ Learning objectives:
 # Import Flask and related modules
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
+import os, re
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -63,12 +63,16 @@ def create_app():
     # CORS (Cross-Origin Resource Sharing) allows your React app (port 8080)
     # to make requests to your Flask app (port 5000)
 
-    # Configure CORS with proper settings
-    # This allows your React app to communicate with the Flask API
-    CORS(app,
-         origins=["http://localhost:8080", "http://127.0.0.1:8080", "http://localhost:8081", "http://127.0.0.1:8081"],
-         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-         allow_headers=["Content-Type", "Authorization"])
+    # Configure CORS with proper settings including Vercel deployment support
+    origins = [
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+        "http://localhost:8081",
+        "http://127.0.0.1:8081"
+    ]
+    # Allow all Vercel preview & prod for this project
+    vercel_regex = re.compile(r"https://.*\.vercel\.app")
+    CORS(app, resources={r"/*": {"origins": origins + [vercel_regex]}})
 
     # ========================================================================
     # DATA STORE INITIALIZATION
