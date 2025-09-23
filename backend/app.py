@@ -899,15 +899,15 @@ def create_app():
 # APPLICATION ENTRY POINT
 # ============================================================================
 
+# Create the Flask application instance for Gunicorn
+app = create_app()
+
 if __name__ == '__main__':
     """
     This block runs when you execute: python app.py
 
-    It creates the Flask app and starts the development server.
+    It uses the already created Flask app and starts the development server.
     """
-
-    # Create the Flask application
-    app = create_app()
 
     # TODO: Configure the development server
     # You might want to specify:
